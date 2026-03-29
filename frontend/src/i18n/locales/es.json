@@ -97,7 +97,14 @@
     "removed": "Eliminado",
     "cleared": "Carrito vaciado",
     "orderOk": "Pedido realizado",
-    "orderErr": "Error al pagar"
+    "orderErr": "Error al pagar",
+    "paypalCheckout": "Pagar con PayPal (sandbox)",
+    "paypalHint": "PayPal usa el entorno sandbox: crea una cuenta de prueba en developer.paypal.com y define PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET en el entorno del servicio de pedidos.",
+    "paypalCreateErr": "No se pudo iniciar PayPal. ¿Está configurado el sandbox?",
+    "paypalCaptureErr": "No se pudo confirmar el pago en PayPal.",
+    "paypalMissingToken": "Falta el token de PayPal en la URL de retorno.",
+    "paypalProcessing": "Confirmando pago con PayPal…",
+    "backToCart": "Volver al carrito"
   },
   "orders": {
     "loading": "Cargando pedidos…",
@@ -157,12 +164,22 @@
     "usersTitle": "Usuarios registrados",
     "usersLoadErr": "No se pudieron cargar usuarios. Confirma sesión ADMIN.",
     "ordersTitle": "Pedidos",
-    "ordersHint": "Aún no hay API global de pedidos para admin; esta lista refleja el alcance de cuenta para revisión de diseño.",
+    "ordersHint": "Listado global de pedidos de todos los clientes.",
     "noRows": "Sin filas.",
     "users": "Usuarios",
     "orders": "Pedidos",
     "usersDesc": "Cuentas y roles",
-    "ordersDesc": "Registro de transacciones (alcance según API)"
+    "ordersDesc": "Todas las compras del sistema",
+    "statsLoading": "Cargando métricas…",
+    "statsErr": "No se pudieron cargar las métricas.",
+    "statsPending": "Solicitudes pendientes",
+    "statsPendingHint": "Pedidos creados en PayPal y aún no capturados.",
+    "statsPaidToday": "Completados hoy",
+    "statsPaidTodayHint": "Pedidos pagados registrados hoy.",
+    "statsRevenueToday": "Ingresos del día",
+    "statsRevenueTodayHint": "Suma de pedidos pagados del día actual.",
+    "chart7dLabel": "Compras realizadas (últimos 7 días, USD)",
+    "chartTooltip": "Total"
   },
   "register": {
     "welcome": "Bienvenido a {{name}}"

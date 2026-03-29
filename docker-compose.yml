@@ -2,6 +2,9 @@ x-java-build: &java-build
   context: ./services
   dockerfile: Dockerfile
 
+x-java-tracing: &java-tracing
+  ZIPKIN_URL: http://zipkin:9411/api/v2/spans
+
 services:
 
   # ── Infrastructure ──────────────────────────────────────────────────────────
@@ -85,6 +88,8 @@ services:
     container_name: bookstore-discovery
     ports:
       - "8761:8761"
+    environment:
+      <<: *java-tracing
     networks:
       - bookstore-network
     healthcheck:
@@ -103,6 +108,7 @@ services:
     ports:
       - "8888:8888"
     environment:
+      <<: *java-tracing
       EUREKA_HOST: discovery-service
     depends_on:
       discovery-service:
@@ -119,6 +125,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      <<: *java-tracing
       EUREKA_HOST: discovery-service
       JWT_SECRET: bookstoreSecretKey2024bookstoreSecretKey2024XD
     depends_on:
@@ -143,6 +150,7 @@ services:
     ports:
       - "8081:8081"
     environment:
+      <<: *java-tracing
       SERVER_PORT: 8081
       DB_HOST: postgres
       DB_NAME: authdb
@@ -170,6 +178,7 @@ services:
     ports:
       - "8181:8081"
     environment:
+      <<: *java-tracing
       SERVER_PORT: 8081
       DB_HOST: postgres
       DB_NAME: authdb
@@ -198,6 +207,7 @@ services:
     ports:
       - "8082:8082"
     environment:
+      <<: *java-tracing
       MONGO_HOST: mongodb
       MONGO_DB: catalogdb
       EUREKA_HOST: discovery-service
@@ -218,6 +228,7 @@ services:
     ports:
       - "8182:8082"
     environment:
+      <<: *java-tracing
       MONGO_HOST: mongodb
       MONGO_DB: catalogdb
       EUREKA_HOST: discovery-service
@@ -239,6 +250,7 @@ services:
     ports:
       - "8083:8083"
     environment:
+      <<: *java-tracing
       DB_HOST: postgres
       DB_NAME: orderdb
       DB_USER: postgres
@@ -246,6 +258,10 @@ services:
       RABBITMQ_HOST: rabbitmq
       EUREKA_HOST: discovery-service
       PAYMENT_MOCK: "true"
+      PAYPAL_ENABLED: ${PAYPAL_ENABLED:-false}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      PAYPAL_BASE_URL: ${PAYPAL_BASE_URL:-https://api-m.sandbox.paypal.com}
     depends_on:
       postgres:
         condition: service_healthy
@@ -265,6 +281,7 @@ services:
     ports:
       - "8183:8083"
     environment:
+      <<: *java-tracing
       DB_HOST: postgres
       DB_NAME: orderdb
       DB_USER: postgres
@@ -272,6 +289,10 @@ services:
       RABBITMQ_HOST: rabbitmq
       EUREKA_HOST: discovery-service
       PAYMENT_MOCK: "true"
+      PAYPAL_ENABLED: ${PAYPAL_ENABLED:-false}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      PAYPAL_BASE_URL: ${PAYPAL_BASE_URL:-https://api-m.sandbox.paypal.com}
     depends_on:
       postgres:
         condition: service_healthy
@@ -292,6 +313,7 @@ services:
     ports:
       - "8084:8084"
     environment:
+      <<: *java-tracing
       DB_HOST: postgres
       DB_NAME: reviewdb
       DB_USER: postgres
@@ -314,6 +336,7 @@ services:
     ports:
       - "8184:8084"
     environment:
+      <<: *java-tracing
       DB_HOST: postgres
       DB_NAME: reviewdb
       DB_USER: postgres
@@ -337,12 +360,14 @@ services:
     ports:
       - "8085:8085"
     environment:
+      <<: *java-tracing
       MONGO_HOST: mongodb
       MONGO_DB: notificationdb
       RABBITMQ_HOST: rabbitmq
       MAIL_HOST: mailhog
       MAIL_PORT: 1025
       EUREKA_HOST: discovery-service
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     depends_on:
       mongodb:
         condition: service_healthy

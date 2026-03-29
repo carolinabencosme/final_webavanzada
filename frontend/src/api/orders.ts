@@ -14,16 +14,46 @@ export interface CheckoutBody {
   cardCvc?: string
 }
 
+export interface PayPalCreateBody {
+  userEmail: string
+  returnUrl: string
+  cancelUrl: string
+}
+
+export interface PayPalCaptureBody {
+  userEmail: string
+  paypalOrderId: string
+}
+
+export interface OrderStats {
+  pendingCount: number
+  paidTodayCount: number
+  paidTodayTotal: number
+  last7DaysPaid: { date: string; total: number }[]
+}
+
 export const checkout = (body: CheckoutBody) =>
   api.post(`/orders/${uid()}/checkout`, body).then((r) => r.data.data)
+
+export const createPayPalOrder = (body: PayPalCreateBody) =>
+  api.post(`/orders/${uid()}/paypal/create`, body).then((r) => r.data.data) as Promise<{
+    paypalOrderId: string
+    approvalUrl: string
+    localOrderId?: string
+  }>
+
+export const capturePayPalOrder = (body: PayPalCaptureBody) =>
+  api.post(`/orders/${uid()}/paypal/capture`, body).then((r) => r.data.data)
 
 export const getMyOrders = () => api.get(`/orders/${uid()}`).then((r) => r.data.data)
 
 export const getOrderById = (id: string) =>
   api.get(`/orders/${uid()}/${id}`).then((r) => r.data.data)
 
-/** Si el backend añade un endpoint global de pedidos para admin, actualiza esta ruta. */
-export const getAllOrders = () => api.get(`/orders/${uid()}`).then((r) => r.data.data)
+/** Todas las compras (solo rol ADMIN en backend). */
+export const getAllOrdersAdmin = () => api.get('/orders/admin/all').then((r) => r.data.data)
+
+export const getAdminStats = () => api.get('/orders/admin/stats').then((r) => r.data.data as OrderStats)
 
 export const downloadInvoice = (orderId: string) =>
   api.get(`/reports/invoice/${orderId}`, { responseType: 'blob' })

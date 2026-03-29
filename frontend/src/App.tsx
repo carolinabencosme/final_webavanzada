@@ -13,6 +13,7 @@ import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
+import PayPalReturnPage from './pages/PayPalReturnPage'
 import SiteFooter from './components/SiteFooter'
 import DocumentTitle from './components/DocumentTitle'
 
@@ -46,6 +47,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <CartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout/paypal-return"
+            element={
+              <ProtectedRoute>
+                <PayPalReturnPage />
               </ProtectedRoute>
             }
           />

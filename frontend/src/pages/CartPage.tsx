@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Trash2, ShoppingBag } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { getCart, removeCartItem, updateCartItem, clearCart } from '../api/cart'
-import { checkout } from '../api/orders'
+import { checkout, createPayPalOrder } from '../api/orders'
 import { getUser } from '../store/authStore'
 
 export default function CartPage() {
@@ -25,8 +25,24 @@ export default function CartPage() {
       toast.success(t('cart.orderOk'))
       qc.invalidateQueries({ queryKey: ['cart'] })
       qc.invalidateQueries({ queryKey: ['orders'] })
+      qc.invalidateQueries({ queryKey: ['admin-stats'] })
     },
     onError: () => toast.error(t('cart.orderErr')),
+  })
+
+  const paypalMut = useMutation({
+    mutationFn: () => {
+      const origin = window.location.origin
+      return createPayPalOrder({
+        userEmail: user!.email,
+        returnUrl: `${origin}/checkout/paypal-return`,
+        cancelUrl: `${origin}/cart`,
+      })
+    },
+    onSuccess: (data) => {
+      window.location.href = data.approvalUrl
+    },
+    onError: () => toast.error(t('cart.paypalCreateErr')),
   })
 
   const items = data?.items ?? []
@@ -108,16 +124,27 @@ export default function CartPage() {
               >
                 {t('cart.clearAll')}
               </button>
-              <button
-                type="button"
-                className="btn-primary !normal-case !tracking-normal gap-2"
-                disabled={checkoutMut.isPending}
-                onClick={() => checkoutMut.mutate()}
-              >
-                <ShoppingBag className="w-5 h-5" strokeWidth={1.75} />
-                {checkoutMut.isPending ? t('cart.processing') : t('cart.checkout')}
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <button
+                  type="button"
+                  className="btn-secondary !normal-case !tracking-normal gap-2 w-full sm:w-auto justify-center"
+                  disabled={paypalMut.isPending || checkoutMut.isPending}
+                  onClick={() => paypalMut.mutate()}
+                >
+                  {paypalMut.isPending ? t('cart.processing') : t('cart.paypalCheckout')}
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary !normal-case !tracking-normal gap-2 w-full sm:w-auto justify-center"
+                  disabled={checkoutMut.isPending || paypalMut.isPending}
+                  onClick={() => checkoutMut.mutate()}
+                >
+                  <ShoppingBag className="w-5 h-5" strokeWidth={1.75} />
+                  {checkoutMut.isPending ? t('cart.processing') : t('cart.checkout')}
+                </button>
+              </div>
             </div>
+            <p className="text-xs text-ink-muted max-w-xl">{t('cart.paypalHint')}</p>
           </div>
         )}
       </div>

@@ -1,0 +1,15 @@
+package com.bookstore.cartorder.config;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@Data
+@ConfigurationProperties(prefix = "paypal")
+public class PayPalProperties {
+    /** Sandbox or live API base (no trailing slash) */
+    private String baseUrl = "https://api-m.sandbox.paypal.com";
+    private String clientId = "";
+    private String clientSecret = "";
+    /** When false, PayPal REST calls are disabled; use mock checkout instead */
+    private boolean enabled = false;
+}

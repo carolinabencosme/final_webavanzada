@@ -3,6 +3,7 @@ import com.bookstore.notification.event.OrderCompletedEvent;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -11,14 +12,26 @@ import org.springframework.stereotype.Service;
 public class EmailService {
     private final JavaMailSender mailSender;
 
+    @Value("${app.frontend-url:http://localhost:3000}")
+    private String frontendUrl;
+
     public void sendWelcomeEmail(String to, String username) {
         try {
+            String loginUrl = frontendUrl.replaceAll("/$", "") + "/login";
             MimeMessage msg = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(msg, false, "UTF-8");
             helper.setTo(to);
             helper.setFrom("noreply@bookstore.com");
-            helper.setSubject("Welcome to BookStore!");
-            helper.setText("<html><body><h1>Welcome to BookStore!</h1><p>Hello " + username + ", your account is ready.</p></body></html>", true);
+            helper.setSubject("Welcome to BookStore — your access");
+            String html = "<html><body style='font-family:system-ui,sans-serif'>"
+                + "<h1>Welcome to BookStore</h1>"
+                + "<p>Hello " + username + ", your account was created successfully.</p>"
+                + "<p><strong>Sign-in email:</strong> " + to + "</p>"
+                + "<p>Use the password you chose at registration to log in.</p>"
+                + "<p><a href=\"" + loginUrl + "\">Open the bookstore</a></p>"
+                + "<p style='color:#666;font-size:12px'>If the link does not work, copy this URL into your browser:<br/>" + loginUrl + "</p>"
+                + "</body></html>";
+            helper.setText(html, true);
             mailSender.send(msg);
             log.info("Welcome email sent to: {}", to);
         } catch (Exception e) {

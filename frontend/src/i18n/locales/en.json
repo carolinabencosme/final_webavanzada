@@ -97,7 +97,14 @@
     "removed": "Removed",
     "cleared": "Cart cleared",
     "orderOk": "Order placed",
-    "orderErr": "Checkout failed"
+    "orderErr": "Checkout failed",
+    "paypalCheckout": "Pay with PayPal (sandbox)",
+    "paypalHint": "PayPal uses the sandbox: create test credentials at developer.paypal.com and set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET for the order service.",
+    "paypalCreateErr": "Could not start PayPal. Is the sandbox configured?",
+    "paypalCaptureErr": "Could not confirm the PayPal payment.",
+    "paypalMissingToken": "Missing PayPal token in the return URL.",
+    "paypalProcessing": "Confirming PayPal payment…",
+    "backToCart": "Back to cart"
   },
   "orders": {
     "loading": "Loading orders…",
@@ -157,12 +164,22 @@
     "usersTitle": "Registered users",
     "usersLoadErr": "Unable to load users. Confirm ADMIN session.",
     "ordersTitle": "Orders",
-    "ordersHint": "A dedicated admin-wide order API is not wired yet; this list mirrors account-scoped orders for layout review.",
+    "ordersHint": "Global list of orders from all customers.",
     "noRows": "No rows.",
     "users": "Users",
     "orders": "Orders",
     "usersDesc": "Accounts and roles",
-    "ordersDesc": "Transaction log (scope varies by API)"
+    "ordersDesc": "All purchases in the system",
+    "statsLoading": "Loading metrics…",
+    "statsErr": "Could not load metrics.",
+    "statsPending": "Pending requests",
+    "statsPendingHint": "Orders created in PayPal but not yet captured.",
+    "statsPaidToday": "Completed today",
+    "statsPaidTodayHint": "Paid orders recorded today.",
+    "statsRevenueToday": "Today's revenue",
+    "statsRevenueTodayHint": "Sum of paid orders for the current day.",
+    "chart7dLabel": "Purchases (last 7 days, USD)",
+    "chartTooltip": "Total"
   },
   "register": {
     "welcome": "Welcome to {{name}}"
