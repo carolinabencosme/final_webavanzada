@@ -49,7 +49,9 @@
     "topicsLink": "Catálogo completo →",
     "recentLabel": "Novedades",
     "recentTitle": "Títulos recientes",
-    "recentLink": "Ver todos"
+    "recentLink": "Ver todos",
+    "recentError": "No se pudo cargar el catálogo. El servicio puede estar iniciando.",
+    "recentRetry": "Reintentar"
   },
   "catalog": {
     "label": "Catálogo",

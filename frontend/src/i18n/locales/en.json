@@ -49,7 +49,9 @@
     "topicsLink": "Full catalog →",
     "recentLabel": "New & notable",
     "recentTitle": "Recent titles",
-    "recentLink": "View all"
+    "recentLink": "View all",
+    "recentError": "We couldn’t load the catalog. The API may still be starting.",
+    "recentRetry": "Try again"
   },
   "catalog": {
     "label": "Catalog",

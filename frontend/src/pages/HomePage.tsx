@@ -8,7 +8,13 @@ import SkeletonCard from '../components/SkeletonCard'
 
 export default function HomePage() {
   const { t } = useTranslation()
-  const { data, isLoading } = useQuery({ queryKey: ['books-home'], queryFn: () => getBooks(0, 8) })
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+  } = useQuery({ queryKey: ['books-home'], queryFn: () => getBooks(0, 8) })
   const { data: genres } = useQuery({ queryKey: ['genres'], queryFn: getGenres })
   const topicList =
     Array.isArray(genres) && genres.length > 0 ? genres.slice(0, 8) : ['Fiction', 'Science', 'History', 'Philosophy', 'Arts', 'Education']
@@ -88,11 +94,20 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-            {isLoading
+            {isLoading || (isFetching && !data)
               ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
-              : data?.content?.map((book: unknown) => (
-                  <BookCard key={(book as { id: string }).id} book={book as Parameters<typeof BookCard>[0]['book']} />
-                ))}
+              : isError
+                ? (
+                    <div className="col-span-full rounded border border-ink/12 bg-paper-deep px-6 py-8 text-center">
+                      <p className="text-ink font-medium">{t('home.recentError')}</p>
+                      <button type="button" onClick={() => refetch()} className="btn-primary mt-4">
+                        {t('home.recentRetry')}
+                      </button>
+                    </div>
+                  )
+                : (data?.content?.length ? data.content : []).map((book: unknown) => (
+                    <BookCard key={(book as { id: string }).id} book={book as Parameters<typeof BookCard>[0]['book']} />
+                  ))}
           </div>
         </div>
       </section>

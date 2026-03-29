@@ -23,7 +23,7 @@ spring:
         - id: catalog-service
           uri: lb://catalog-service
           predicates:
-            - Path=/api/books/**,/api/genres/**
+            - Path=/api/books,/api/books/**,/api/genres,/api/genres/**
           filters:
             - StripPrefix=1
         - id: cart-order-service
