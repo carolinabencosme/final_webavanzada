@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { getUser } from '../store/authStore'
 
-interface Props { children: React.ReactNode; adminOnly?: boolean }
+interface Props { children: ReactNode; adminOnly?: boolean }
 
 export default function ProtectedRoute({ children, adminOnly }: Props) {
   const user = getUser()

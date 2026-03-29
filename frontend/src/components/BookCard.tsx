@@ -1,56 +1,86 @@
-import { motion } from 'framer-motion'
 import { ShoppingCart, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 import { addToCart } from '../api/cart'
 import { getUser } from '../store/authStore'
 import { useQueryClient } from '@tanstack/react-query'
 
-interface Book { id: string; title: string; author: string; genre: string; price: number; coverUrl: string; averageRating: number; }
+interface Book {
+  id: string
+  title: string
+  author: string
+  genre: string
+  price: number
+  coverUrl: string
+  averageRating: number
+}
 
-interface Props { book: Book }
+interface Props {
+  book: Book
+}
 
 export default function BookCard({ book }: Props) {
+  const { t } = useTranslation()
   const user = getUser()
   const qc = useQueryClient()
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
-    if (!user) { toast.error('Please login to add items to cart'); return }
+    e.stopPropagation()
+    if (!user) {
+      toast.error(t('bookCard.loginRequired'))
+      return
+    }
     try {
       await addToCart(book.id, 1)
       qc.invalidateQueries({ queryKey: ['cart'] })
-      toast.success(`"${book.title}" added to cart!`)
-    } catch { toast.error('Failed to add to cart') }
+      toast.success(t('bookCard.added', { title: book.title }))
+    } catch {
+      toast.error(t('bookCard.addError'))
+    }
   }
 
+  const cover =
+    book.coverUrl ||
+    `https://via.placeholder.com/280x420/1a1f26/e8e0d5?text=${encodeURIComponent(book.title.slice(0, 18))}`
+
   return (
-    <motion.div whileHover={{ y: -4, boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
-      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:border-primary-200 transition-all duration-300 flex flex-col">
-      <Link to={`/books/${book.id}`} className="flex-1">
-        <div className="aspect-[2/3] bg-gray-100 overflow-hidden">
-          <img src={book.coverUrl || `https://via.placeholder.com/200x300/4F46E5/FFFFFF?text=${encodeURIComponent(book.title.substring(0,10))}`}
-            alt={book.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-            onError={(e) => { (e.target as HTMLImageElement).src = `https://via.placeholder.com/200x300/4F46E5/FFFFFF?text=Book` }} />
+    <article className="group flex flex-col h-full">
+      <Link to={`/books/${book.id}`} className="card flex flex-col flex-1 overflow-hidden transition-shadow duration-300 hover:shadow-lift">
+        <div className="aspect-[2/3] bg-paper-deep overflow-hidden relative">
+          <img
+            src={cover}
+            alt=""
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            onError={(e) => {
+              ;(e.target as HTMLImageElement).src =
+                'https://via.placeholder.com/280x420/1a1f26/e8e0d5?text=Book'
+            }}
+          />
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
-        <div className="p-4">
-          <span className="badge bg-primary-50 text-primary-700 mb-2">{book.genre}</span>
-          <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1 line-clamp-2">{book.title}</h3>
-          <p className="text-gray-500 text-xs mb-2">{book.author}</p>
-          <div className="flex items-center gap-1 mb-3">
-            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-            <span className="text-xs font-medium text-gray-700">{book.averageRating?.toFixed(1) || '0.0'}</span>
+        <div className="p-4 flex flex-col flex-1 border-t border-ink/6">
+          <span className="badge mb-2 w-fit">{book.genre}</span>
+          <h3 className="font-serif text-lg leading-snug text-ink font-semibold line-clamp-2 group-hover:text-primary-700 transition-colors">
+            {book.title}
+          </h3>
+          <p className="text-ink-muted text-xs mt-1 line-clamp-1">{book.author}</p>
+          <div className="flex items-center gap-1 mt-2">
+            <Star className="w-3.5 h-3.5 fill-gold-light/90 text-gold-light shrink-0" strokeWidth={0} />
+            <span className="text-xs tabular-nums text-ink-muted">{book.averageRating?.toFixed(1) ?? '—'}</span>
           </div>
-          <p className="text-primary-600 font-bold text-lg">${Number(book.price).toFixed(2)}</p>
+          <p className="mt-auto pt-3 font-serif text-xl text-primary-700 font-semibold">${Number(book.price).toFixed(2)}</p>
         </div>
       </Link>
-      <div className="px-4 pb-4">
-        <button onClick={handleAddToCart}
-          className="w-full btn-primary justify-center text-sm py-2">
-          <ShoppingCart className="w-4 h-4" /> Add to Cart
-        </button>
-      </div>
-    </motion.div>
+      <button
+        type="button"
+        onClick={handleAddToCart}
+        className="mt-3 w-full btn-primary !normal-case !tracking-normal text-[13px] py-2.5"
+      >
+        <ShoppingCart className="w-4 h-4" strokeWidth={1.75} />
+        {t('bookCard.addToCart')}
+      </button>
+    </article>
   )
 }

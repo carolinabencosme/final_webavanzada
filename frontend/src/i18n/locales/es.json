@@ -1,0 +1,168 @@
+{
+  "meta": {
+    "title": "Librería PUCMM"
+  },
+  "brand": {
+    "name": "Librería PUCMM",
+    "university": "Pontificia Universidad Católica Madre y Maestra",
+    "subtitle": "PUCMM · República Dominicana",
+    "topBar": "Comunidad académica PUCMM"
+  },
+  "nav": {
+    "home": "Inicio",
+    "catalog": "Catálogo",
+    "orders": "Pedidos",
+    "admin": "Administración",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta",
+    "signOut": "Cerrar sesión",
+    "shopCatalog": "Ir al catálogo",
+    "cart": "Carrito",
+    "cartAria": "Carrito de compras",
+    "menuAria": "Menú",
+    "lang": "Idioma"
+  },
+  "footer": {
+    "explore": "Explorar",
+    "help": "Ayuda",
+    "fullCatalog": "Catálogo completo",
+    "home": "Inicio",
+    "memberLogin": "Acceso miembros",
+    "help1": "Pedidos y envíos",
+    "help2": "Devoluciones (30 días)",
+    "help3": "Compras institucionales y facultad",
+    "blurb": "Librería digital del ecosistema académico de la Pontificia Universidad Católica Madre y Maestra. Selección curada, trato transparente y compromiso con la lectura como práctica universitaria. Cada compra refuerza proyectos de biblioteca y cultura lectora en PUCMM.",
+    "legal": "Proyecto académico — Web Avanzada. Contenido y marca de demostración; no constituye servicio oficial de la universidad."
+  },
+  "home": {
+    "heroLabel": "Librería universitaria",
+    "heroTitle": "Textos elegidos para el estudio riguroso y la lectura con propósito.",
+    "heroBody": "Canal pensado para la comunidad PUCMM: catálogo curado, precios claros y un espacio donde docencia, investigación y lectura personal se encuentran.",
+    "catalogCta": "Ver catálogo",
+    "registerCta": "Crear cuenta",
+    "missionLabel": "Nuestra misión",
+    "missionQuote": "Creemos que la lectura atenta es parte de la excelencia académica. Esta librería acerca a estudiantes y profesores a ediciones que merecen tiempo, debate y retorno.",
+    "missionFootnote": "Los ingresos simbolizan apoyo a iniciativas de biblioteca, préstamos y acceso al libro en los campus de PUCMM.",
+    "exploreLabel": "Explorar",
+    "topicsTitle": "Por materia o enfoque",
+    "topicsDesc": "Accesos rápidos al catálogo; mismos títulos, filtrados por género o disciplina.",
+    "topicsLink": "Catálogo completo →",
+    "recentLabel": "Novedades",
+    "recentTitle": "Títulos recientes",
+    "recentLink": "Ver todos"
+  },
+  "catalog": {
+    "label": "Catálogo",
+    "title": "Todos los títulos",
+    "intro": "Busca por autor o título, o acota por disciplina. El inventario se actualiza con nuevas ediciones.",
+    "searchPlaceholder": "Título o autor",
+    "search": "Buscar",
+    "allSubjects": "Todas las materias",
+    "clearFilters": "Limpiar filtros",
+    "emptyTitle": "No hay títulos que coincidan.",
+    "emptyHint": "Prueba otra palabra o explora por materia arriba.",
+    "page": "Página {{current}} de {{total}}"
+  },
+  "bookCard": {
+    "addToCart": "Añadir al carrito",
+    "loginRequired": "Inicia sesión para añadir al carrito",
+    "added": "Añadido: {{title}}",
+    "addError": "No se pudo añadir al carrito"
+  },
+  "bookDetail": {
+    "loading": "Cargando…",
+    "notFound": "No se encontró este título.",
+    "back": "Volver al catálogo",
+    "breadcrumb": "Catálogo",
+    "by": "de",
+    "ratingSuffix": "/ 5",
+    "aboutEdition": "Sobre esta edición",
+    "addToCart": "Añadir al carrito",
+    "loginRequired": "Inicia sesión para añadir al carrito",
+    "toastOk": "Añadido al carrito",
+    "toastErr": "No se pudo añadir al carrito"
+  },
+  "cart": {
+    "label": "Cesta",
+    "title": "Tu carrito",
+    "loading": "Cargando tu carrito…",
+    "emptyTitle": "Tu carrito está vacío.",
+    "emptyHint": "Explora el catálogo y añade títulos cuando quieras.",
+    "goCatalog": "Ir al catálogo",
+    "clearAll": "Vaciar carrito",
+    "checkout": "Pagar (pago simulado)",
+    "processing": "Procesando…",
+    "removed": "Eliminado",
+    "cleared": "Carrito vaciado",
+    "orderOk": "Pedido realizado",
+    "orderErr": "Error al pagar"
+  },
+  "orders": {
+    "loading": "Cargando pedidos…",
+    "label": "Historial",
+    "title": "Tus pedidos",
+    "empty": "Aún no has realizado pedidos."
+  },
+  "auth": {
+    "loginTitle": "Iniciar sesión",
+    "loginSubtitle": "Usa tu correo y contraseña registrados.",
+    "registerTitle": "Crear cuenta",
+    "registerSubtitle": "Tarda menos de un minuto.",
+    "email": "Correo",
+    "password": "Contraseña",
+    "displayName": "Nombre visible",
+    "confirmPassword": "Confirmar contraseña",
+    "signIn": "Entrar",
+    "signingIn": "Entrando…",
+    "createAccount": "Crear cuenta",
+    "creating": "Creando…",
+    "noAccount": "¿Sin cuenta?",
+    "hasAccount": "¿Ya eres miembro?",
+    "registerLink": "Registrarse",
+    "loginLink": "Iniciar sesión",
+    "loginAsideLabel": "Acceso PUCMM",
+    "loginAsideBody": "Inicia sesión para guardar listas, ver pedidos y comprar con la cuenta de la comunidad de la {{university}}.",
+    "loginAsideFoot": "Sesión segura · Credenciales cifradas · Sin publicidad de terceros",
+    "registerAsideLabel": "Registro PUCMM",
+    "registerAsideBody": "Crea tu cuenta para comprar, revisar pedidos y recibir avisos de novedades en {{name}}.",
+    "registerAsideFoot": "Una sola cuenta para todo el catálogo académico.",
+    "namePlaceholder": "Tu nombre",
+    "emailPlaceholder": "correo@pucmm.edu.do",
+    "welcomeBack": "Bienvenido, {{name}}",
+    "invalidCredentials": "Credenciales incorrectas",
+    "registerError": "No se pudo registrar",
+    "passwordMismatch": "Las contraseñas no coinciden"
+  },
+  "login": {
+    "demoTitle": "Cuentas demo:",
+    "demoAdmin": "Admin: admin@bookstore.com / admin123",
+    "demoClient": "Cliente: alice@test.com / password123"
+  },
+  "unauthorized": {
+    "code": "403",
+    "title": "Zona restringida",
+    "body": "Esta sección es solo para administradores. Si crees que es un error, contacta soporte.",
+    "cta": "Volver al inicio"
+  },
+  "admin": {
+    "sidebarTitle": "PUCMM",
+    "sidebarSubtitle": "Administración",
+    "linkOverview": "Resumen",
+    "linkUsers": "Usuarios",
+    "linkOrders": "Pedidos",
+    "dashboardTitle": "Panel PUCMM",
+    "dashboardSubtitle": "Herramientas internas · {{name}}",
+    "usersTitle": "Usuarios registrados",
+    "usersLoadErr": "No se pudieron cargar usuarios. Confirma sesión ADMIN.",
+    "ordersTitle": "Pedidos",
+    "ordersHint": "Aún no hay API global de pedidos para admin; esta lista refleja el alcance de cuenta para revisión de diseño.",
+    "noRows": "Sin filas.",
+    "users": "Usuarios",
+    "orders": "Pedidos",
+    "usersDesc": "Cuentas y roles",
+    "ordersDesc": "Registro de transacciones (alcance según API)"
+  },
+  "register": {
+    "welcome": "Bienvenido a {{name}}"
+  }
+}

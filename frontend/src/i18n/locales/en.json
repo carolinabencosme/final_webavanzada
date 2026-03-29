@@ -1,0 +1,168 @@
+{
+  "meta": {
+    "title": "PUCMM Bookstore"
+  },
+  "brand": {
+    "name": "PUCMM Bookstore",
+    "university": "Pontificia Universidad Católica Madre y Maestra",
+    "subtitle": "PUCMM · Dominican Republic",
+    "topBar": "PUCMM academic community"
+  },
+  "nav": {
+    "home": "Home",
+    "catalog": "Catalog",
+    "orders": "Orders",
+    "admin": "Administration",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "signOut": "Sign out",
+    "shopCatalog": "Shop catalog",
+    "cart": "Cart",
+    "cartAria": "Shopping cart",
+    "menuAria": "Menu",
+    "lang": "Language"
+  },
+  "footer": {
+    "explore": "Explore",
+    "help": "Help",
+    "fullCatalog": "Full catalog",
+    "home": "Home",
+    "memberLogin": "Member login",
+    "help1": "Orders & shipping",
+    "help2": "Returns (30 days)",
+    "help3": "Institutional & faculty orders",
+    "blurb": "Digital bookstore for the academic ecosystem of the Pontificia Universidad Católica Madre y Maestra. Curated selection, transparent service, and a commitment to reading as a university practice. Each purchase supports library projects and reading culture at PUCMM.",
+    "legal": "Academic project — Web Avanzada. Demo content and branding; not an official university service."
+  },
+  "home": {
+    "heroLabel": "University bookstore",
+    "heroTitle": "Books chosen for rigorous study and purposeful reading.",
+    "heroBody": "Built for the PUCMM community: a curated catalog, clear pricing, and a space where teaching, research, and personal reading meet.",
+    "catalogCta": "Browse catalog",
+    "registerCta": "Create account",
+    "missionLabel": "Our mission",
+    "missionQuote": "We believe attentive reading is part of academic excellence. This bookstore brings students and faculty editions that deserve time, debate, and return.",
+    "missionFootnote": "Proceeds symbolically support library initiatives, lending, and access to books on PUCMM campuses.",
+    "exploreLabel": "Explore",
+    "topicsTitle": "By subject or focus",
+    "topicsDesc": "Quick links to the catalog—same titles, filtered by genre or discipline.",
+    "topicsLink": "Full catalog →",
+    "recentLabel": "New & notable",
+    "recentTitle": "Recent titles",
+    "recentLink": "View all"
+  },
+  "catalog": {
+    "label": "Catalog",
+    "title": "All titles",
+    "intro": "Search by author or title, or narrow by discipline. Inventory updates as new editions arrive.",
+    "searchPlaceholder": "Title or author",
+    "search": "Search",
+    "allSubjects": "All subjects",
+    "clearFilters": "Clear filters",
+    "emptyTitle": "No titles match your search.",
+    "emptyHint": "Try another keyword or browse by subject above.",
+    "page": "Page {{current}} of {{total}}"
+  },
+  "bookCard": {
+    "addToCart": "Add to cart",
+    "loginRequired": "Please sign in to add items to your cart",
+    "added": "Added: {{title}}",
+    "addError": "Could not add to cart"
+  },
+  "bookDetail": {
+    "loading": "Loading…",
+    "notFound": "This title could not be found.",
+    "back": "Back to catalog",
+    "breadcrumb": "Catalog",
+    "by": "by",
+    "ratingSuffix": "/ 5",
+    "aboutEdition": "About this edition",
+    "addToCart": "Add to cart",
+    "loginRequired": "Please sign in to add items to your cart",
+    "toastOk": "Added to cart",
+    "toastErr": "Could not add to cart"
+  },
+  "cart": {
+    "label": "Basket",
+    "title": "Your cart",
+    "loading": "Loading your cart…",
+    "emptyTitle": "Your cart is empty.",
+    "emptyHint": "Browse the catalog and add titles when you are ready.",
+    "goCatalog": "Go to catalog",
+    "clearAll": "Clear entire cart",
+    "checkout": "Checkout (mock payment)",
+    "processing": "Processing…",
+    "removed": "Removed",
+    "cleared": "Cart cleared",
+    "orderOk": "Order placed",
+    "orderErr": "Checkout failed"
+  },
+  "orders": {
+    "loading": "Loading orders…",
+    "label": "History",
+    "title": "Your orders",
+    "empty": "You have not placed any orders yet."
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "loginSubtitle": "Use your registered email and password.",
+    "registerTitle": "Create account",
+    "registerSubtitle": "Takes under a minute.",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display name",
+    "confirmPassword": "Confirm password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "createAccount": "Create account",
+    "creating": "Creating…",
+    "noAccount": "No account?",
+    "hasAccount": "Already a member?",
+    "registerLink": "Register",
+    "loginLink": "Sign in",
+    "loginAsideLabel": "PUCMM access",
+    "loginAsideBody": "Sign in to save lists, track orders, and shop with your account for the {{university}} community.",
+    "loginAsideFoot": "Secure session · Encrypted credentials · No third-party ads",
+    "registerAsideLabel": "PUCMM registration",
+    "registerAsideBody": "Create your account to shop, review orders, and get notices of new arrivals at {{name}}.",
+    "registerAsideFoot": "One account for the entire academic catalog.",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "you@pucmm.edu.do",
+    "welcomeBack": "Welcome back, {{name}}",
+    "invalidCredentials": "Invalid credentials",
+    "registerError": "Registration failed",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "login": {
+    "demoTitle": "Demo accounts:",
+    "demoAdmin": "Admin: admin@bookstore.com / admin123",
+    "demoClient": "Client: alice@test.com / password123"
+  },
+  "unauthorized": {
+    "code": "403",
+    "title": "Restricted area",
+    "body": "This section is for administrators only. If you believe this is an error, contact support.",
+    "cta": "Return home"
+  },
+  "admin": {
+    "sidebarTitle": "PUCMM",
+    "sidebarSubtitle": "Administration",
+    "linkOverview": "Overview",
+    "linkUsers": "Users",
+    "linkOrders": "Orders",
+    "dashboardTitle": "PUCMM panel",
+    "dashboardSubtitle": "Internal tools · {{name}}",
+    "usersTitle": "Registered users",
+    "usersLoadErr": "Unable to load users. Confirm ADMIN session.",
+    "ordersTitle": "Orders",
+    "ordersHint": "A dedicated admin-wide order API is not wired yet; this list mirrors account-scoped orders for layout review.",
+    "noRows": "No rows.",
+    "users": "Users",
+    "orders": "Orders",
+    "usersDesc": "Accounts and roles",
+    "ordersDesc": "Transaction log (scope varies by API)"
+  },
+  "register": {
+    "welcome": "Welcome to {{name}}"
+  }
+}

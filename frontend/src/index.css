@@ -1,14 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base { body { @apply bg-gray-50 text-gray-900 font-sans; } }
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+}
 
 @layer components {
-  .btn-primary { @apply bg-primary-600 hover:bg-primary-700 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed; }
-  .btn-secondary { @apply bg-white hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg border border-gray-200 transition-all duration-200 inline-flex items-center gap-2; }
-  .card { @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6; }
-  .input { @apply w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all; }
-  .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold tracking-wide uppercase text-xs px-5 py-2.5
+      transition-colors duration-200 inline-flex items-center justify-center gap-2
+      disabled:opacity-45 disabled:cursor-not-allowed border border-transparent;
+  }
+  .btn-secondary {
+    @apply bg-transparent hover:bg-paper-deep text-ink font-semibold tracking-wide uppercase text-xs px-5 py-2.5
+      border border-black/[0.14] transition-colors duration-200 inline-flex items-center justify-center gap-2;
+  }
+  .btn-ghost {
+    @apply text-ink-muted hover:text-ink font-medium text-sm transition-colors underline-offset-4 hover:underline;
+  }
+  .card {
+    @apply bg-white border border-black/[0.07] shadow-book;
+  }
+  .input {
+    @apply w-full px-4 py-3 bg-white border border-black/[0.08] text-ink placeholder:text-gray-400
+      focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600/20 transition-all font-sans text-sm;
+  }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-primary-700 bg-primary-50 border border-primary-100;
+  }
+  .section-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-gold;
+  }
+  .prose-editorial {
+    @apply text-ink-muted leading-relaxed font-sans text-[15px];
+  }
 }

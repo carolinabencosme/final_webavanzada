@@ -1,71 +1,98 @@
-import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { BookOpen, Shield, Zap, Star, ArrowRight } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { getBooks } from '../api/catalog'
+import { useTranslation } from 'react-i18next'
+import { ArrowRight } from 'lucide-react'
+import { getBooks, getGenres } from '../api/catalog'
 import BookCard from '../components/BookCard'
 import SkeletonCard from '../components/SkeletonCard'
 
-const features = [
-  { icon: BookOpen, title: 'Vast Catalog', desc: '50+ curated books across all genres' },
-  { icon: Zap, title: 'Instant Purchase', desc: 'Secure checkout with instant confirmation' },
-  { icon: Shield, title: 'Safe & Secure', desc: 'Your data is protected with JWT authentication' },
-  { icon: Star, title: 'Honest Reviews', desc: 'Verified purchase reviews from real readers' },
-]
-
 export default function HomePage() {
+  const { t } = useTranslation()
   const { data, isLoading } = useQuery({ queryKey: ['books-home'], queryFn: () => getBooks(0, 8) })
+  const { data: genres } = useQuery({ queryKey: ['genres'], queryFn: getGenres })
+  const topicList =
+    Array.isArray(genres) && genres.length > 0 ? genres.slice(0, 8) : ['Fiction', 'Science', 'History', 'Philosophy', 'Arts', 'Education']
 
   return (
     <div>
-      <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-24 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h1 className="text-5xl font-bold mb-6 leading-tight">Discover Your Next<br />Great Read 📚</h1>
-            <p className="text-xl text-primary-200 mb-10 max-w-2xl mx-auto">
-              Explore our curated collection of books across every genre. From timeless classics to modern bestsellers.
-            </p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Link to="/catalog" className="bg-white text-primary-700 hover:bg-primary-50 font-semibold px-8 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg hover:shadow-xl">
-                Browse Catalog <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link to="/register" className="border-2 border-white/40 hover:bg-white/10 text-white font-semibold px-8 py-3 rounded-xl transition-all">
-                Get Started Free
-              </Link>
-            </div>
-          </motion.div>
+      <section className="relative overflow-hidden border-b border-ink/8">
+        <div className="absolute inset-0 bg-gradient-to-br from-paper via-paper to-paper-deep" />
+        <div
+          className="absolute top-0 right-0 w-[55%] h-full opacity-[0.07] pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+          <p className="section-label mb-4">{t('home.heroLabel')}</p>
+          <h1 className="font-serif font-semibold text-display text-ink max-w-3xl">{t('home.heroTitle')}</h1>
+          <p className="mt-6 prose-editorial max-w-xl">{t('home.heroBody')}</p>
+          <div className="mt-10 flex flex-wrap gap-4">
+            <Link to="/catalog" className="btn-primary inline-flex gap-2">
+              {t('home.catalogCta')} <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
+            </Link>
+            <Link to="/register" className="btn-secondary">
+              {t('home.registerCta')}
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Why BookStore?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map(({ icon: Icon, title, desc }, i) => (
-              <motion.div key={title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }} className="text-center p-6">
-                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Icon className="w-6 h-6 text-primary-600" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
-                <p className="text-gray-500 text-sm">{desc}</p>
-              </motion.div>
+      <section className="bg-ink text-paper py-16 md:py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="section-label text-gold-light mb-3">{t('home.missionLabel')}</p>
+            <blockquote className="font-serif text-2xl md:text-3xl leading-snug text-paper/95 font-medium">
+              “{t('home.missionQuote')}”
+            </blockquote>
+            <p className="mt-6 text-sm text-paper/55 max-w-lg leading-relaxed">{t('home.missionFootnote')}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 md:py-24 border-b border-ink/8 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <div>
+              <p className="section-label mb-2">{t('home.exploreLabel')}</p>
+              <h2 className="font-serif text-3xl md:text-4xl text-ink">{t('home.topicsTitle')}</h2>
+              <p className="mt-2 prose-editorial max-w-lg">{t('home.topicsDesc')}</p>
+            </div>
+            <Link to="/catalog" className="btn-ghost self-start md:self-auto shrink-0">
+              {t('home.topicsLink')}
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {topicList.map((g) => (
+              <Link
+                key={g}
+                to={`/catalog?genre=${encodeURIComponent(g)}`}
+                className="px-4 py-2.5 text-sm font-medium border border-ink/12 bg-paper hover:bg-paper-deep hover:border-ink/20 transition-colors text-ink"
+              >
+                {g}
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-20 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Latest Books</h2>
-            <Link to="/catalog" className="text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
-              View all <ArrowRight className="w-4 h-4" />
+      <section className="py-16 md:py-24 bg-paper">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+            <div>
+              <p className="section-label mb-2">{t('home.recentLabel')}</p>
+              <h2 className="font-serif text-3xl md:text-4xl text-ink">{t('home.recentTitle')}</h2>
+            </div>
+            <Link to="/catalog" className="btn-ghost text-sm">
+              {t('home.recentLink')}
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-            {isLoading ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
-              : data?.content?.map((book: unknown) => <BookCard key={(book as {id: string}).id} book={book as Parameters<typeof BookCard>[0]['book']} />)}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+            {isLoading
+              ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
+              : data?.content?.map((book: unknown) => (
+                  <BookCard key={(book as { id: string }).id} book={book as Parameters<typeof BookCard>[0]['book']} />
+                ))}
           </div>
         </div>
       </section>
