@@ -1,0 +1,2 @@
+/home/runner/work/final_webavanzada/final_webavanzada/services/api-gateway/src/main/java/com/bookstore/gateway/ApiGatewayApplication.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/api-gateway/src/main/java/com/bookstore/gateway/filter/JwtAuthenticationFilter.java

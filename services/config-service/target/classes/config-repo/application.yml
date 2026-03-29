@@ -1,0 +1,10 @@
+jwt:
+  secret: ${JWT_SECRET:bookstoreSecretKey2024bookstoreSecretKey2024XD}
+  expiration: 86400000
+
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}

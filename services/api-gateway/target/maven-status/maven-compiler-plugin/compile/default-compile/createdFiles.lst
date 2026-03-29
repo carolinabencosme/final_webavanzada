@@ -1,0 +1,2 @@
+com/bookstore/gateway/ApiGatewayApplication.class
+com/bookstore/gateway/filter/JwtAuthenticationFilter.class
