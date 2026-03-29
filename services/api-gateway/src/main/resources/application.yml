@@ -1,0 +1,62 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**,/api/users/**,/api/roles/**
+          filters:
+            - StripPrefix=1
+        - id: catalog-service
+          uri: lb://catalog-service
+          predicates:
+            - Path=/api/books/**,/api/genres/**
+          filters:
+            - StripPrefix=1
+        - id: cart-order-service
+          uri: lb://cart-order-service
+          predicates:
+            - Path=/api/cart/**,/api/orders/**,/api/checkout/**
+          filters:
+            - StripPrefix=1
+        - id: review-service
+          uri: lb://review-service
+          predicates:
+            - Path=/api/reviews/**
+          filters:
+            - StripPrefix=1
+        - id: notification-service
+          uri: lb://notification-report-service
+          predicates:
+            - Path=/api/reports/**,/api/notifications/**
+          filters:
+            - StripPrefix=1
+
+jwt:
+  secret: ${JWT_SECRET:bookstoreSecretKey2024bookstoreSecretKey2024XD}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

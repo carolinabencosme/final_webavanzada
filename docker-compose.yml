@@ -1,0 +1,332 @@
+version: "3.8"
+
+services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: bookstore-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - bookstore-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:6
+    container_name: bookstore-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - bookstore-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: bookstore-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - bookstore-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: bookstore-zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - bookstore-network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: bookstore-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - bookstore-network
+
+  # ── Core Services ────────────────────────────────────────────────────────────
+  discovery-service:
+    build: ./services/discovery-service
+    container_name: bookstore-discovery
+    ports:
+      - "8761:8761"
+    networks:
+      - bookstore-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  config-service:
+    build: ./services/config-service
+    container_name: bookstore-config
+    ports:
+      - "8888:8888"
+    environment:
+      EUREKA_HOST: discovery-service
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: bookstore-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_HOST: discovery-service
+      JWT_SECRET: bookstoreSecretKey2024bookstoreSecretKey2024XD
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # ── Auth Service (2 instances) ───────────────────────────────────────────────
+  auth-service-1:
+    build: ./services/auth-service
+    container_name: bookstore-auth-1
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      DB_HOST: postgres
+      DB_NAME: authdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      EUREKA_HOST: discovery-service
+      JWT_SECRET: bookstoreSecretKey2024bookstoreSecretKey2024XD
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  auth-service-2:
+    build: ./services/auth-service
+    container_name: bookstore-auth-2
+    ports:
+      - "8181:8081"
+    environment:
+      SERVER_PORT: 8081
+      DB_HOST: postgres
+      DB_NAME: authdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      EUREKA_HOST: discovery-service
+      JWT_SECRET: bookstoreSecretKey2024bookstoreSecretKey2024XD
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # ── Catalog Service (2 instances) ────────────────────────────────────────────
+  catalog-service-1:
+    build: ./services/catalog-service
+    container_name: bookstore-catalog-1
+    ports:
+      - "8082:8082"
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_DB: catalogdb
+      EUREKA_HOST: discovery-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  catalog-service-2:
+    build: ./services/catalog-service
+    container_name: bookstore-catalog-2
+    ports:
+      - "8182:8082"
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_DB: catalogdb
+      EUREKA_HOST: discovery-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # ── Cart/Order Service (2 instances) ─────────────────────────────────────────
+  cart-order-service-1:
+    build: ./services/cart-order-service
+    container_name: bookstore-cart-1
+    ports:
+      - "8083:8083"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: orderdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      EUREKA_HOST: discovery-service
+      PAYMENT_MOCK: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  cart-order-service-2:
+    build: ./services/cart-order-service
+    container_name: bookstore-cart-2
+    ports:
+      - "8183:8083"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: orderdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      EUREKA_HOST: discovery-service
+      PAYMENT_MOCK: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # ── Review Service (2 instances) ─────────────────────────────────────────────
+  review-service-1:
+    build: ./services/review-service
+    container_name: bookstore-review-1
+    ports:
+      - "8084:8084"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: reviewdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      EUREKA_HOST: discovery-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  review-service-2:
+    build: ./services/review-service
+    container_name: bookstore-review-2
+    ports:
+      - "8184:8084"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: reviewdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      EUREKA_HOST: discovery-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # ── Notification Service ──────────────────────────────────────────────────────
+  notification-report-service:
+    build: ./services/notification-report-service
+    container_name: bookstore-notification
+    ports:
+      - "8085:8085"
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_DB: notificationdb
+      RABBITMQ_HOST: rabbitmq
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      EUREKA_HOST: discovery-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  # ── Frontend ──────────────────────────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    container_name: bookstore-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - bookstore-network
+
+networks:
+  bookstore-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mongo_data:
+  rabbitmq_data:

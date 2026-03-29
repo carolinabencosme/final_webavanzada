@@ -1,0 +1,14 @@
+com/bookstore/catalog/document/Book$BookBuilder.class
+com/bookstore/catalog/dto/ApiResponse.class
+com/bookstore/catalog/dto/BookDto$BookDtoBuilder.class
+com/bookstore/catalog/dto/ApiResponse$ApiResponseBuilder.class
+com/bookstore/catalog/dto/PageResponse.class
+com/bookstore/catalog/seeder/BookDataSeeder.class
+com/bookstore/catalog/dto/BookDto.class
+com/bookstore/catalog/service/BookService.class
+com/bookstore/catalog/document/Book.class
+com/bookstore/catalog/dto/PageResponse$PageResponseBuilder.class
+com/bookstore/catalog/exception/GlobalExceptionHandler.class
+com/bookstore/catalog/controller/BookController.class
+com/bookstore/catalog/CatalogServiceApplication.class
+com/bookstore/catalog/repository/BookRepository.class
