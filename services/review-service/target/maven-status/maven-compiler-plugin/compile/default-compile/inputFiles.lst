@@ -1,0 +1,13 @@
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/service/ReviewService.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/controller/ReviewController.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/dto/OrderDto.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/client/CatalogClient.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/client/OrderClient.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/dto/CreateReviewRequest.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/dto/BookRatingDto.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/dto/ReviewDto.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/repository/ReviewRepository.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/dto/ApiResponse.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/exception/GlobalExceptionHandler.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/entity/Review.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/review-service/src/main/java/com/bookstore/review/ReviewServiceApplication.java

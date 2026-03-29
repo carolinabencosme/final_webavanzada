@@ -1,0 +1,10 @@
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/repository/BookRepository.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/dto/ApiResponse.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/document/Book.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/exception/GlobalExceptionHandler.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/dto/BookDto.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/service/BookService.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/CatalogServiceApplication.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/seeder/BookDataSeeder.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/controller/BookController.java
+/home/runner/work/final_webavanzada/final_webavanzada/services/catalog-service/src/main/java/com/bookstore/catalog/dto/PageResponse.java
