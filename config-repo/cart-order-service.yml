@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:orderdb}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+payment:
+  mock: ${PAYMENT_MOCK:true}
