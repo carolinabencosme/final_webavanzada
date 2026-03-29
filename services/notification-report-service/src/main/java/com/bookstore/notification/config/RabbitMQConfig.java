@@ -1,23 +1,19 @@
 package com.bookstore.notification.config;
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
-    public static final String ORDER_EXCHANGE = "order.exchange";
-    public static final String ORDER_CREATED_QUEUE = "order.created.queue";
-    public static final String ORDER_CREATED_ROUTING_KEY = "order.created";
-
-    @Bean public TopicExchange orderExchange() { return new TopicExchange(ORDER_EXCHANGE); }
-    @Bean public Queue orderCreatedQueue() { return new Queue(ORDER_CREATED_QUEUE, true); }
-    @Bean public Binding orderCreatedBinding() { return BindingBuilder.bind(orderCreatedQueue()).to(orderExchange()).with(ORDER_CREATED_ROUTING_KEY); }
-    @Bean public Jackson2JsonMessageConverter messageConverter() { return new Jackson2JsonMessageConverter(); }
-    @Bean public RabbitTemplate rabbitTemplate(ConnectionFactory cf) {
-        RabbitTemplate t = new RabbitTemplate(cf);
-        t.setMessageConverter(messageConverter());
-        return t;
-    }
+    public static final String EXCHANGE="bookstore.events";
+    public static final String USER_REGISTERED_QUEUE="user.registered";
+    public static final String ORDER_COMPLETED_QUEUE="order.completed";
+    @Bean public TopicExchange exchange(){return new TopicExchange(EXCHANGE,true,false);}
+    @Bean public Queue userRegisteredQueue(){return new Queue(USER_REGISTERED_QUEUE,true);}
+    @Bean public Queue orderCompletedQueue(){return new Queue(ORDER_COMPLETED_QUEUE,true);}
+    @Bean public Binding userRegisteredBinding(Queue userRegisteredQueue,TopicExchange exchange){
+        return BindingBuilder.bind(userRegisteredQueue).to(exchange).with("user.registered");}
+    @Bean public Binding orderCompletedBinding(Queue orderCompletedQueue,TopicExchange exchange){
+        return BindingBuilder.bind(orderCompletedQueue).to(exchange).with("order.completed");}
+    @Bean public Jackson2JsonMessageConverter messageConverter(){return new Jackson2JsonMessageConverter();}
 }

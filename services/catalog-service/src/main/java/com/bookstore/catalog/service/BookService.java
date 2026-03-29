@@ -22,9 +22,7 @@ public class BookService {
     public PageResponse<BookDto> searchBooks(String title, String author, String genre, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Book> result;
-        if (title != null && !title.isBlank() && genre != null && !genre.isBlank()) {
-            result = bookRepository.findByTitleContainingIgnoreCase(title, pageable);
-        } else if (title != null && !title.isBlank()) {
+        if (title != null && !title.isBlank()) {
             result = bookRepository.findByTitleContainingIgnoreCase(title, pageable);
         } else if (author != null && !author.isBlank()) {
             result = bookRepository.findByAuthorContainingIgnoreCase(author, pageable);

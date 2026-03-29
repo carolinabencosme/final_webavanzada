@@ -1,6 +1,6 @@
 package com.bookstore.notification.service;
 import com.bookstore.notification.document.NotificationLog;
-import com.bookstore.notification.event.OrderCreatedEvent;
+import com.bookstore.notification.event.*;
 import com.bookstore.notification.repository.NotificationLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,33 +9,48 @@ import java.time.LocalDateTime;
 import java.util.List;
 @Service @RequiredArgsConstructor @Slf4j
 public class NotificationService {
-    private final NotificationLogRepository logRepository;
     private final EmailService emailService;
+    private final InvoiceService invoiceService;
+    private final NotificationLogRepository logRepository;
 
-    public void processOrderCreated(OrderCreatedEvent event) {
-        String subject = "Order Confirmation #" + event.getOrderId();
-        StringBuilder body = new StringBuilder();
-        body.append("Thank you for your order!\n\n");
-        body.append("Order ID: ").append(event.getOrderId()).append("\n");
-        body.append("Total: $").append(event.getTotal()).append("\n\n");
-        body.append("Items:\n");
-        if (event.getItems() != null) {
-            event.getItems().forEach(item ->
-                body.append("- ").append(item.getBookTitle()).append(" x").append(item.getQuantity())
-                    .append(" = $").append(item.getPrice().multiply(java.math.BigDecimal.valueOf(item.getQuantity()))).append("\n")
-            );
-        }
-        body.append("\nThank you for shopping with BookStore!");
-        emailService.sendEmail(event.getUserEmail(), subject, body.toString());
-        NotificationLog log2 = NotificationLog.builder()
-            .userId(event.getUserId()).userEmail(event.getUserEmail())
-            .type("ORDER_CONFIRMATION").subject(subject).body(body.toString())
-            .orderId(event.getOrderId()).status("SENT").createdAt(LocalDateTime.now()).build();
-        logRepository.save(log2);
-        log.info("Order confirmation sent for order {}", event.getOrderId());
+    public void handleUserRegistered(UserRegisteredEvent event) {
+        log.info("Handling user registered: {}", event.getEmail());
+        emailService.sendWelcomeEmail(event.getEmail(), event.getUsername());
+        logRepository.save(NotificationLog.builder()
+            .type("WELCOME").userId(event.getUserId()).email(event.getEmail())
+            .subject("Welcome to BookStore!").status("SENT").createdAt(LocalDateTime.now()).build());
     }
 
-    public List<NotificationLog> getUserNotifications(String userId) {
-        return logRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    public void handleOrderCompleted(OrderCompletedEvent event) {
+        log.info("Handling order completed: {}", event.getOrderNumber());
+        try {
+            byte[] pdf = invoiceService.generateInvoice(event);
+            emailService.sendOrderConfirmationEmail(event.getUserEmail(), event.getUserEmail(), event, pdf);
+            logRepository.save(NotificationLog.builder()
+                .type("ORDER_CONFIRMATION").userId(event.getUserId()).email(event.getUserEmail())
+                .subject("Order Confirmation - " + event.getOrderNumber())
+                .status("SENT").orderId(event.getOrderId()).createdAt(LocalDateTime.now()).build());
+        } catch (Exception e) {
+            log.error("Error processing order notification: {}", e.getMessage());
+            logRepository.save(NotificationLog.builder()
+                .type("ORDER_CONFIRMATION").userId(event.getUserId()).email(event.getUserEmail())
+                .status("FAILED").orderId(event.getOrderId())
+                .errorMessage(e.getMessage()).createdAt(LocalDateTime.now()).build());
+        }
+    }
+
+    public byte[] getOrGenerateInvoice(String orderId) {
+        OrderCompletedEvent mockEvent = new OrderCompletedEvent();
+        mockEvent.setOrderId(orderId);
+        mockEvent.setOrderNumber("ORD-" + orderId.substring(0, Math.min(8, orderId.length())));
+        mockEvent.setUserId("");
+        mockEvent.setUserEmail("customer@example.com");
+        mockEvent.setTotal(java.math.BigDecimal.ZERO);
+        mockEvent.setItems(List.of());
+        return invoiceService.generateInvoice(mockEvent);
+    }
+
+    public List<NotificationLog> getHistory() {
+        return logRepository.findTop50ByOrderByCreatedAtDesc();
     }
 }
