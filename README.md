@@ -165,7 +165,8 @@ Consumidor de eventos RabbitMQ que:
 
 ## Requisitos Previos
 
-- **Docker** ≥ 24.0 y **Docker Compose** ≥ 2.20
+- **Docker** ≥ 24.0 y **Docker Compose** ≥ 2.20. En **Windows**, si Docker Desktop muestra *Virtualization support not detected*, activa la virtualización en la BIOS/UEFI (Intel VT-x / AMD-V), habilita **Windows Hypervisor Platform** y **Virtual Machine Platform** (Panel de características de Windows) y, si usas WSL2, instala o actualiza el [kernel de WSL2](https://learn.microsoft.com/es-es/windows/wsl/install). Sin virtualización el motor de Docker no arranca; no es un fallo del repositorio.
+- **Build en Docker:** los microservicios usan **`services/Dockerfile`** (argumento `MODULE`) y Maven dentro de la imagen; no hace falta generar los JAR en el host antes de `docker compose build`. El **frontend** usa **`frontend/Dockerfile`** (Vite + Nginx); Nginx reenvía **`/api`** al contenedor **`api-gateway`**.
 - **Java 17** y **Maven 3.9** (sólo para desarrollo local sin Docker)
 - **Node.js 18+** (sólo para desarrollo local del frontend)
 - Puertos disponibles: `3000, 5432, 5672, 8025, 8080–8085, 8181–8184, 8761, 8888, 9411, 15672, 27017`

@@ -1,5 +1,9 @@
 version: "3.8"
 
+x-java-build: &java-build
+  context: ./services
+  dockerfile: Dockerfile
+
 services:
 
   # ── Infrastructure ──────────────────────────────────────────────────────────
@@ -76,7 +80,10 @@ services:
 
   # ── Core Services ────────────────────────────────────────────────────────────
   discovery-service:
-    build: ./services/discovery-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: discovery-service
     container_name: bookstore-discovery
     ports:
       - "8761:8761"
@@ -90,7 +97,10 @@ services:
       start_period: 30s
 
   config-service:
-    build: ./services/config-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: config-service
     container_name: bookstore-config
     ports:
       - "8888:8888"
@@ -103,7 +113,10 @@ services:
       - bookstore-network
 
   api-gateway:
-    build: ./services/api-gateway
+    build:
+      <<: *java-build
+      args:
+        MODULE: api-gateway
     container_name: bookstore-gateway
     ports:
       - "8080:8080"
@@ -118,7 +131,10 @@ services:
 
   # ── Auth Service (2 instances) ───────────────────────────────────────────────
   auth-service-1:
-    build: ./services/auth-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: auth-service
     container_name: bookstore-auth-1
     ports:
       - "8081:8081"
@@ -142,7 +158,10 @@ services:
       - bookstore-network
 
   auth-service-2:
-    build: ./services/auth-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: auth-service
     container_name: bookstore-auth-2
     ports:
       - "8181:8081"
@@ -167,7 +186,10 @@ services:
 
   # ── Catalog Service (2 instances) ────────────────────────────────────────────
   catalog-service-1:
-    build: ./services/catalog-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: catalog-service
     container_name: bookstore-catalog-1
     ports:
       - "8082:8082"
@@ -184,7 +206,10 @@ services:
       - bookstore-network
 
   catalog-service-2:
-    build: ./services/catalog-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: catalog-service
     container_name: bookstore-catalog-2
     ports:
       - "8182:8082"
@@ -202,7 +227,10 @@ services:
 
   # ── Cart/Order Service (2 instances) ─────────────────────────────────────────
   cart-order-service-1:
-    build: ./services/cart-order-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: cart-order-service
     container_name: bookstore-cart-1
     ports:
       - "8083:8083"
@@ -225,7 +253,10 @@ services:
       - bookstore-network
 
   cart-order-service-2:
-    build: ./services/cart-order-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: cart-order-service
     container_name: bookstore-cart-2
     ports:
       - "8183:8083"
@@ -249,7 +280,10 @@ services:
 
   # ── Review Service (2 instances) ─────────────────────────────────────────────
   review-service-1:
-    build: ./services/review-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: review-service
     container_name: bookstore-review-1
     ports:
       - "8084:8084"
@@ -268,7 +302,10 @@ services:
       - bookstore-network
 
   review-service-2:
-    build: ./services/review-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: review-service
     container_name: bookstore-review-2
     ports:
       - "8184:8084"
@@ -288,7 +325,10 @@ services:
 
   # ── Notification Service ──────────────────────────────────────────────────────
   notification-report-service:
-    build: ./services/notification-report-service
+    build:
+      <<: *java-build
+      args:
+        MODULE: notification-report-service
     container_name: bookstore-notification
     ports:
       - "8085:8085"
