@@ -18,6 +18,12 @@ export interface PayPalCaptureBody {
   paypalOrderId: string
 }
 
+export interface PayPalPublicConfig {
+  enabled: boolean
+  clientId: string
+  currency: string
+}
+
 export interface OrderStats {
   pendingCount: number
   paidTodayCount: number
@@ -27,6 +33,9 @@ export interface OrderStats {
 
 export const checkout = (body: CheckoutBody) =>
   api.post('/orders/checkout', body).then((r) => r.data.data)
+
+export const getPayPalPublicConfig = () =>
+  api.get('/orders/paypal/public-config').then((r) => r.data.data as PayPalPublicConfig)
 
 export const createPayPalOrder = (body: PayPalCreateBody) =>
   api.post('/orders/paypal/create', body).then((r) => r.data.data) as Promise<{

@@ -12,4 +12,6 @@ public class PayPalProperties {
     private String clientSecret = "";
     /** When false, PayPal REST calls are disabled; use mock checkout instead */
     private boolean enabled = false;
+    /** Currency exposed to frontend SDK initialization */
+    private String currency = "USD";
 }

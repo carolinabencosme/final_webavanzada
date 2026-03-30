@@ -1,5 +1,6 @@
 package com.bookstore.cartorder.controller;
 
+import com.bookstore.cartorder.config.PayPalProperties;
 import com.bookstore.cartorder.dto.*;
 import com.bookstore.cartorder.service.OrderService;
 import com.bookstore.cartorder.web.RequestIdentityResolver;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +20,7 @@ import java.util.Map;
 public class OrderController {
     private final OrderService orderService;
     private final RequestIdentityResolver identityResolver;
+    private final PayPalProperties payPalProperties;
 
     /**
      * Creates an order from the authenticated user's cart.
@@ -39,6 +42,15 @@ public class OrderController {
         RequestIdentityResolver.RequestIdentity identity = identityResolver.resolveFromHeaders(request);
         String userEmail = identity.userEmail() != null ? identity.userEmail() : req.getUserEmail();
         return ResponseEntity.ok(ApiResponse.success("Order created successfully", orderService.checkout(identity.userId(), userEmail, req)));
+    }
+
+    @GetMapping("/paypal/public-config")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getPublicPayPalConfig() {
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("enabled", payPalProperties.isEnabled());
+        data.put("clientId", payPalProperties.getClientId());
+        data.put("currency", payPalProperties.getCurrency());
+        return ResponseEntity.ok(ApiResponse.success("OK", data));
     }
 
     @PostMapping("/paypal/create")
