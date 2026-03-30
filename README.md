@@ -113,21 +113,19 @@ Gestión de usuarios y autenticación. Provee:
 
 ### 5. `catalog-service` — Puerto 8082 (×2 instancias)
 CRUD completo del catálogo de libros almacenado en MongoDB:
-- `GET    /api/catalog/books` — Listar libros (con paginación y filtros)
-- `GET    /api/catalog/books/{id}` — Detalle de un libro
-- `POST   /api/catalog/books` — Crear libro (requiere rol ADMIN)
-- `PUT    /api/catalog/books/{id}` — Actualizar libro (requiere rol ADMIN)
-- `DELETE /api/catalog/books/{id}` — Eliminar libro (requiere rol ADMIN)
+- `GET    /api/books` — Listar libros (con paginación y filtros)
+- `GET    /api/genres` — Listar géneros disponibles
+- `GET    /api/books/{id}` — Detalle de un libro
+- `POST   /api/books/{id}/rating?averageRating={valor}&totalReviews={n}` — Actualizar rating (uso interno por review-service)
 
 ### 6. `cart-order-service` — Puerto 8083 (×2 instancias)
 Gestión del carrito y procesamiento de pedidos:
-- `GET    /api/cart` — Ver carrito del usuario
-- `POST   /api/cart/items` — Agregar libro al carrito
-- `DELETE /api/cart/items/{id}` — Quitar ítem del carrito
+- `GET    /api/cart/items` — Ver ítems del carrito del usuario
+- `POST   /api/cart/items` — Agregar libro al carrito (`{"bookId":"...","quantity":1}`)
+- `DELETE /api/cart/items/{itemId}` — Quitar ítem del carrito
 - `POST   /api/orders` — Confirmar pedido (pago mock incluido)
 - `GET    /api/orders` — Historial de pedidos del usuario
-- `GET    /api/orders/{id}` — Detalle de pedido
-- `GET    /api/orders/{id}/invoice` — Descargar factura PDF
+- `GET    /api/orders/{orderId}` — Detalle de pedido
 - Publica evento `order.confirmed` en RabbitMQ
 
 ### 7. `review-service` — Puerto 8084 (×2 instancias)
@@ -141,8 +139,7 @@ Consumidor de eventos RabbitMQ que:
 - Envía email de bienvenida al registrar usuario (`user.registered`)
 - Envía email de confirmación al completar pedido (`order.confirmed`)
 - Genera facturas en PDF con iText/JasperReports
-- `GET /api/reports/orders` — Reporte general de pedidos (ADMIN)
-- `GET /api/reports/orders/{id}/pdf` — Factura PDF de un pedido
+- `GET /api/reports/invoice/{orderId}` — Factura PDF de un pedido
 
 ---
 
@@ -286,6 +283,68 @@ TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
 echo $TOKEN
 ```
 
+### Smoke test mínimo en PowerShell (Gateway)
+
+```powershell
+$baseUrl = "http://localhost:8080"
+
+# 1) Login y token desde $loginResponse.data.token
+$loginBody = @{ email = "admin@bookstore.com"; password = "Admin1234!" } | ConvertTo-Json
+$loginResponse = Invoke-RestMethod -Method Post -Uri "$baseUrl/api/auth/login" -ContentType "application/json" -Body $loginBody
+$token = $loginResponse.data.token
+$headers = @{ Authorization = "Bearer $token" }
+
+# 2) Catálogo + bookId desde $books.data.content[0].id
+$books = Invoke-RestMethod -Method Get -Uri "$baseUrl/api/books?page=0&size=12" -Headers $headers
+$bookId = $books.data.content[0].id
+
+# 3) Add cart item (bookId, quantity)
+$cartBody = @{ bookId = $bookId; quantity = 1 } | ConvertTo-Json
+$addCart = Invoke-RestMethod -Method Post -Uri "$baseUrl/api/cart/items" -Headers $headers -ContentType "application/json" -Body $cartBody
+
+# 4) Listar cart items
+$cartItems = Invoke-RestMethod -Method Get -Uri "$baseUrl/api/cart/items" -Headers $headers
+
+# 5) Crear orden
+$newOrder = Invoke-RestMethod -Method Post -Uri "$baseUrl/api/orders" -Headers $headers
+$orderId = $newOrder.data.orderId
+
+# 6) Listar órdenes y obtener detalle
+$orders = Invoke-RestMethod -Method Get -Uri "$baseUrl/api/orders" -Headers $headers
+$orderDetail = Invoke-RestMethod -Method Get -Uri "$baseUrl/api/orders/$orderId" -Headers $headers
+```
+
+### Ejemplo de respuesta real (`ApiResponse<OrderDto>`)
+
+```json
+{
+  "success": true,
+  "message": "Order created successfully",
+  "data": {
+    "id": 27,
+    "orderId": 27,
+    "userId": "2",
+    "userEmail": "admin@bookstore.com",
+    "paymentId": "MOCK-6b87d9b1",
+    "status": "COMPLETED",
+    "total": 59.98,
+    "createdAt": "2026-03-30T14:22:51.381",
+    "items": [
+      {
+        "id": 10,
+        "bookId": "67f5f8f7d2c7e12ab349901a",
+        "title": "Cálculo de una variable",
+        "author": "James Stewart",
+        "genre": "Ingeniería",
+        "price": 59.98,
+        "coverImage": "https://...",
+        "quantity": 1
+      }
+    ]
+  }
+}
+```
+
 ---
 
 ## Flujo Funcional del Sistema
@@ -293,14 +352,17 @@ echo $TOKEN
 ```
 Usuario → [Frontend :3000]
         → POST /api/auth/login           → auth-service (JWT emitido)
-        → GET  /api/catalog/books        → catalog-service (listado)
+        → GET  /api/books                → catalog-service (listado)
+        → GET  /api/genres               → catalog-service (géneros)
         → POST /api/cart/items           → cart-order-service (agregar libro)
+        → GET  /api/cart/items           → cart-order-service (listar carrito)
         → POST /api/orders               → cart-order-service (confirmar pedido)
                                               ↓ publica "order.confirmed" en RabbitMQ
                                          notification-report-service
                                               ↓ envía email de confirmación
                                          MailHog (:8025) captura el email
-        → GET  /api/orders/{id}/invoice  → cart-order-service (factura PDF)
+        → GET  /api/orders               → cart-order-service (historial)
+        → GET  /api/orders/{orderId}     → cart-order-service (detalle)
         → POST /api/reviews              → review-service (publicar reseña)
 ```
 
@@ -378,8 +440,9 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 ### Minuto 3–4: Catálogo de Libros
 ```bash
-curl http://localhost:8080/api/catalog/books
-curl http://localhost:8080/api/catalog/books?categoria=ingenieria
+curl http://localhost:8080/api/books
+curl http://localhost:8080/api/genres
+curl http://localhost:8080/api/books?genre=Ingeniería
 ```
 > Mostrar listado de libros desde MongoDB.
 
@@ -391,20 +454,27 @@ export TOKEN="<token-del-login>"
 curl -X POST http://localhost:8080/api/cart/items \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"bookId":"<id>","cantidad":1}'
+  -d '{"bookId":"<id>","quantity":1}'
+
+# Listar carrito
+curl http://localhost:8080/api/cart/items \
+  -H "Authorization: Bearer $TOKEN"
 
 # Confirmar pedido
 curl -X POST http://localhost:8080/api/orders \
   -H "Authorization: Bearer $TOKEN"
+
+# Listar pedidos del usuario
+curl http://localhost:8080/api/orders \
+  -H "Authorization: Bearer $TOKEN"
+
+# Ver detalle de un pedido
+curl http://localhost:8080/api/orders/{orderId} \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
-### Minuto 5–6: Correo Transaccional y Factura PDF
+### Minuto 5–6: Correo Transaccional
 > Abrir http://localhost:8025 — mostrar el email de confirmación de pedido recibido en MailHog.
-```bash
-curl http://localhost:8080/api/orders/<id>/invoice \
-  -H "Authorization: Bearer $TOKEN" \
-  --output factura.pdf && open factura.pdf
-```
 
 ### Minuto 6–7: Reseñas
 ```bash
@@ -441,7 +511,7 @@ curl http://localhost:8080/api/orders
 # Respuesta: 401 Unauthorized
 
 # Intentar acceder a endpoint de admin con rol USER
-curl http://localhost:8080/api/catalog/books \
+curl http://localhost:8080/api/books \
   -X POST \
   -H "Authorization: Bearer $USER_TOKEN"
 # Respuesta: 403 Forbidden
@@ -546,7 +616,7 @@ export USER_TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"usuario@bookstore.com","password":"User1234!"}' | jq -r '.token')
 
-curl -i -X DELETE http://localhost:8080/api/catalog/books/algún-id \
+curl -i -X DELETE http://localhost:8080/api/books/algún-id \
   -H "Authorization: Bearer $USER_TOKEN"
 # Respuesta: 403 Forbidden
 
@@ -555,7 +625,7 @@ export ADMIN_TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@bookstore.com","password":"Admin1234!"}' | jq -r '.token')
 
-curl -i -X DELETE http://localhost:8080/api/catalog/books/algún-id \
+curl -i -X DELETE http://localhost:8080/api/books/algún-id \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 # Respuesta: 200 OK
 ```
@@ -609,10 +679,10 @@ curl -X POST http://localhost:8080/api/orders \
 ```bash
 # 1. Obtener el ID del pedido recién creado
 export ORDER_ID=$(curl -s http://localhost:8080/api/orders \
-  -H "Authorization: Bearer $TOKEN" | jq -r '.[0].id')
+  -H "Authorization: Bearer $TOKEN" | jq -r '.data[0].id')
 
 # 2. Descargar la factura PDF
-curl -s http://localhost:8080/api/orders/$ORDER_ID/invoice \
+curl -s http://localhost:8080/api/reports/invoice/$ORDER_ID \
   -H "Authorization: Bearer $TOKEN" \
   --output factura_$ORDER_ID.pdf
 
