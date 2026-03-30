@@ -31,6 +31,36 @@ public class OrderService {
     private final PayPalClient payPalClient;
     private final RabbitTemplate rabbitTemplate;
 
+    /**
+     * Creates an order from the authenticated user's current cart.
+     * Cart-empty policy: reject request.
+     * Cart-clear policy: cart is cleared only after the order is persisted successfully.
+     */
+    @Transactional
+    public OrderDto createOrder(String userId, String userEmail) {
+        List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
+        if (cartItems.isEmpty()) throw new RuntimeException("Cart is empty");
+
+        BigDecimal total = cartTotal(cartItems);
+        String resolvedEmail = requireUserEmail(userEmail);
+
+        Order order = Order.builder()
+            .userId(userId)
+            .userEmail(resolvedEmail)
+            .status(OrderStatus.PENDING)
+            .total(total)
+            .createdAt(LocalDateTime.now())
+            .paymentId("pending")
+            .build();
+
+        List<OrderItem> orderItems = buildOrderItems(order, cartItems);
+        order.setItems(orderItems);
+        Order saved = orderRepository.save(order);
+
+        cartItemRepository.deleteByUserId(userId);
+        return toDto(saved);
+    }
+
     @Transactional
     public OrderDto checkout(String userId, String userEmail, CheckoutRequest req) {
         List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
@@ -188,7 +218,7 @@ public class OrderService {
                 .bookAuthor(oi.getBookAuthor()).coverUrl(oi.getCoverUrl())
                 .quantity(oi.getQuantity()).price(oi.getPrice()).build()
         ).collect(Collectors.toList());
-        return OrderDto.builder().id(o.getId()).userId(o.getUserId()).userEmail(o.getUserEmail())
+        return OrderDto.builder().id(o.getId()).orderId(o.getId()).userId(o.getUserId()).userEmail(o.getUserEmail())
             .paymentId(o.getPaymentId()).status(o.getStatus()).total(o.getTotal())
             .createdAt(o.getCreatedAt()).items(items).build();
     }
