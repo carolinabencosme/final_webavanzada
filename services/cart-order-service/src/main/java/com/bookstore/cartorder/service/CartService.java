@@ -31,9 +31,8 @@ public class CartService {
 
     @Transactional
     public CartItemDto updateItem(String userId, Long itemId, int quantity) {
-        CartItem item = cartItemRepository.findById(itemId)
-            .filter(i -> i.getUserId().equals(userId))
-            .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        CartItem item = cartItemRepository.findByIdAndUserId(itemId, userId)
+            .orElseThrow(() -> new RuntimeException("Cart item not found for authenticated user"));
         if (quantity <= 0) { cartItemRepository.delete(item); return null; }
         item.setQuantity(quantity);
         return toDto(cartItemRepository.save(item));
@@ -41,9 +40,9 @@ public class CartService {
 
     @Transactional
     public void removeItem(String userId, Long itemId) {
-        cartItemRepository.findById(itemId)
-            .filter(i -> i.getUserId().equals(userId))
-            .ifPresent(cartItemRepository::delete);
+        CartItem item = cartItemRepository.findByIdAndUserId(itemId, userId)
+            .orElseThrow(() -> new RuntimeException("Cart item not found for authenticated user"));
+        cartItemRepository.delete(item);
     }
 
     @Transactional
