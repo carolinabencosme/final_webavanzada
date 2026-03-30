@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /** JSON shape must match notification-service OrderCompletedEvent for RabbitMQ. */
@@ -19,6 +20,7 @@ public class OrderCompletedEvent {
     private String userId;
     private String userEmail;
     private BigDecimal total;
+    private LocalDateTime createdAt;
     private List<OrderItemInfo> items;
 
     @Data

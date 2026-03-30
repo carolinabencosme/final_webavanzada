@@ -1,5 +1,6 @@
 package com.bookstore.notification.messaging;
 import com.bookstore.notification.event.*;
+import com.bookstore.notification.config.RabbitMQConfig;
 import com.bookstore.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +13,8 @@ public class NotificationListener {
     public void onUserRegistered(UserRegisteredEvent event){
         log.info("Received user.registered for {}",event.getEmail());
         notificationService.handleUserRegistered(event);}
-    @RabbitListener(queues="order.completed")
+    @RabbitListener(queues = RabbitMQConfig.ORDER_CONFIRMED_QUEUE)
     public void onOrderCompleted(OrderCompletedEvent event){
-        log.info("Received order.completed for {}",event.getOrderNumber());
+        log.info("Received order.confirmed for {}",event.getOrderNumber());
         notificationService.handleOrderCompleted(event);}
 }

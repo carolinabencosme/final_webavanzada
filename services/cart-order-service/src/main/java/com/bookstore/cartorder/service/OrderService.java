@@ -9,9 +9,12 @@ import com.bookstore.cartorder.payment.PaymentProvider;
 import com.bookstore.cartorder.repository.CartItemRepository;
 import com.bookstore.cartorder.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
     private final OrderRepository orderRepository;
     private final CartItemRepository cartItemRepository;
@@ -141,12 +145,42 @@ public class OrderService {
             .userId(userId)
             .userEmail(userEmail)
             .total(total)
+            .createdAt(saved.getCreatedAt())
             .items(orderItems.stream().map(oi -> OrderCompletedEvent.OrderItemInfo.builder()
                 .bookId(oi.getBookId()).bookTitle(oi.getBookTitle())
                 .quantity(oi.getQuantity()).price(oi.getPrice()).build()
             ).collect(Collectors.toList())).build();
-        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ORDER_COMPLETED_ROUTING_KEY, event);
+
+        publishOrderConfirmedAfterCommit(saved, event);
         return toDto(saved);
+    }
+
+    private void publishOrderConfirmedAfterCommit(Order saved, OrderCompletedEvent event) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    publishOrderConfirmed(saved, event);
+                }
+            });
+            return;
+        }
+        publishOrderConfirmed(saved, event);
+    }
+
+    private void publishOrderConfirmed(Order saved, OrderCompletedEvent event) {
+        try {
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ORDER_CONFIRMED_ROUTING_KEY, event);
+            log.info("event_published type=order.confirmed orderId={} userId={} total={} createdAt={}",
+                saved.getId(), saved.getUserId(), saved.getTotal(), saved.getCreatedAt());
+        } catch (Exception ex) {
+            // Política: no romper el flujo principal de checkout. La orden ya está persistida.
+            // Si se requiere reintento durable, implementar outbox/pending-publication en persistencia.
+            log.error(
+                "event_publish_failed type=order.confirmed orderId={} userId={} total={} createdAt={} action=main_flow_not_rolled_back",
+                saved.getId(), saved.getUserId(), saved.getTotal(), saved.getCreatedAt(), ex
+            );
+        }
     }
 
     private static BigDecimal cartTotal(List<CartItem> cartItems) {
