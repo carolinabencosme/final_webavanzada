@@ -1,11 +1,13 @@
 package com.bookstore.notification.event;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class OrderCompletedEvent {
     private String orderId,orderNumber,userId,userEmail;
     private BigDecimal total;
+    private LocalDateTime createdAt;
     private List<OrderItemInfo> items;
     @Data @NoArgsConstructor @AllArgsConstructor @Builder
     public static class OrderItemInfo {

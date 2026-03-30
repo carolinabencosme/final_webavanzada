@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
     /** Same exchange as auth-service / notification-service */
     public static final String EXCHANGE = "bookstore.events";
-    public static final String ORDER_COMPLETED_ROUTING_KEY = "order.completed";
+    public static final String ORDER_CONFIRMED_ROUTING_KEY = "order.confirmed";
 
     @Bean
     public TopicExchange bookstoreEventsExchange() {
