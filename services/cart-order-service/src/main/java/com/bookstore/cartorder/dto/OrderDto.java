@@ -7,6 +7,7 @@ import java.util.List;
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class OrderDto {
     private Long id;
+    private Long orderId;
     private String userId, userEmail, paymentId;
     private OrderStatus status;
     private BigDecimal total;
