@@ -8,8 +8,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 @Service @RequiredArgsConstructor @Slf4j
 public class ReviewService {
@@ -36,11 +38,10 @@ public class ReviewService {
         }
         boolean hasPurchased = false;
         try {
-            ApiResponse<List<OrderDto>> resp = orderClient.getUserOrders(userId);
+            ApiResponse<List<OrderDto>> resp = orderClient.getUserOrders(userId, req.getUserEmail());
             if (resp != null && resp.getData() != null) {
                 hasPurchased = resp.getData().stream()
-                    .anyMatch(o -> "PAID".equals(o.getStatus()) && o.getItems() != null &&
-                        o.getItems().stream().anyMatch(i -> req.getBookId().equals(i.getBookId())));
+                    .anyMatch(o -> isPaid(o) && hasBookInItems(o, req.getBookId()));
             }
         } catch (Exception e) { log.warn("Could not verify purchase: {}", e.getMessage()); }
         if (!hasPurchased) throw new RuntimeException("You must purchase this book before reviewing it");
@@ -75,5 +76,17 @@ public class ReviewService {
         return ReviewDto.builder().id(r.getId()).userId(r.getUserId()).userEmail(r.getUserEmail())
             .bookId(r.getBookId()).rating(r.getRating()).comment(r.getComment())
             .createdAt(r.getCreatedAt()).build();
+    }
+
+    private boolean isPaid(OrderDto order) {
+        return order != null && "PAID".equals(String.valueOf(order.getStatus()));
+    }
+
+    private boolean hasBookInItems(OrderDto order, String bookId) {
+        if (order == null || order.getItems() == null || bookId == null) return false;
+        return order.getItems().stream()
+            .filter(Objects::nonNull)
+            .map(OrderDto.OrderItemDto::getBookId)
+            .anyMatch(bookId::equals);
     }
 }
