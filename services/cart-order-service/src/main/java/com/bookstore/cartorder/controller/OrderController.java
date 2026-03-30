@@ -14,30 +14,36 @@ import java.util.Map;
 @RequestMapping("/orders")
 @RequiredArgsConstructor
 public class OrderController {
+    private static final String USER_ID_HEADER = "X-User-Id";
+
     private final OrderService orderService;
 
-    @PostMapping("/{userId}/checkout")
-    public ResponseEntity<ApiResponse<OrderDto>> checkout(@PathVariable String userId, @Valid @RequestBody CheckoutRequest req) {
+    @PostMapping
+    public ResponseEntity<ApiResponse<OrderDto>> checkout(@RequestHeader(USER_ID_HEADER) String userId,
+                                                          @Valid @RequestBody CheckoutRequest req) {
         return ResponseEntity.ok(ApiResponse.success("Order placed", orderService.checkout(userId, req)));
     }
 
-    @PostMapping("/{userId}/paypal/create")
-    public ResponseEntity<ApiResponse<Map<String, String>>> createPayPal(@PathVariable String userId, @Valid @RequestBody PayPalCreateRequest req) {
+    @PostMapping("/paypal/create")
+    public ResponseEntity<ApiResponse<Map<String, String>>> createPayPal(@RequestHeader(USER_ID_HEADER) String userId,
+                                                                          @Valid @RequestBody PayPalCreateRequest req) {
         return ResponseEntity.ok(ApiResponse.success("OK", orderService.createPayPalOrder(userId, req)));
     }
 
-    @PostMapping("/{userId}/paypal/capture")
-    public ResponseEntity<ApiResponse<OrderDto>> capturePayPal(@PathVariable String userId, @Valid @RequestBody PayPalCaptureRequest req) {
+    @PostMapping("/paypal/capture")
+    public ResponseEntity<ApiResponse<OrderDto>> capturePayPal(@RequestHeader(USER_ID_HEADER) String userId,
+                                                                @Valid @RequestBody PayPalCaptureRequest req) {
         return ResponseEntity.ok(ApiResponse.success("Order placed", orderService.capturePayPalOrder(userId, req)));
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<List<OrderDto>>> getUserOrders(@PathVariable String userId) {
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<OrderDto>>> getUserOrders(@RequestHeader(USER_ID_HEADER) String userId) {
         return ResponseEntity.ok(ApiResponse.success("OK", orderService.getUserOrders(userId)));
     }
 
-    @GetMapping("/{userId}/{orderId}")
-    public ResponseEntity<ApiResponse<OrderDto>> getOrder(@PathVariable String userId, @PathVariable Long orderId) {
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderDto>> getOrder(@RequestHeader(USER_ID_HEADER) String userId,
+                                                           @PathVariable Long orderId) {
         return ResponseEntity.ok(ApiResponse.success("OK", orderService.getOrder(userId, orderId)));
     }
 

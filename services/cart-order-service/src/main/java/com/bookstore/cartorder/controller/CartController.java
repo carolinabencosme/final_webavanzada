@@ -1,38 +1,49 @@
 package com.bookstore.cartorder.controller;
+
 import com.bookstore.cartorder.dto.*;
 import com.bookstore.cartorder.service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
-@RestController @RequestMapping("/cart") @RequiredArgsConstructor
+
+@RestController
+@RequestMapping("/cart")
+@RequiredArgsConstructor
 public class CartController {
+    private static final String USER_ID_HEADER = "X-User-Id";
+
     private final CartService cartService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<List<CartItemDto>>> getCart(@PathVariable String userId) {
+    @GetMapping("/items")
+    public ResponseEntity<ApiResponse<List<CartItemDto>>> getCart(@RequestHeader(USER_ID_HEADER) String userId) {
         return ResponseEntity.ok(ApiResponse.success("OK", cartService.getCart(userId)));
     }
 
-    @PostMapping("/{userId}")
-    public ResponseEntity<ApiResponse<CartItemDto>> add(@PathVariable String userId, @Valid @RequestBody AddToCartRequest req) {
+    @PostMapping("/items")
+    public ResponseEntity<ApiResponse<CartItemDto>> add(@RequestHeader(USER_ID_HEADER) String userId,
+                                                        @Valid @RequestBody AddToCartRequest req) {
         return ResponseEntity.ok(ApiResponse.success("Added", cartService.addToCart(userId, req)));
     }
 
-    @PutMapping("/{userId}/items/{itemId}")
-    public ResponseEntity<ApiResponse<CartItemDto>> update(@PathVariable String userId, @PathVariable Long itemId, @RequestParam int quantity) {
+    @PutMapping("/items/{itemId}")
+    public ResponseEntity<ApiResponse<CartItemDto>> update(@RequestHeader(USER_ID_HEADER) String userId,
+                                                           @PathVariable Long itemId,
+                                                           @RequestParam int quantity) {
         return ResponseEntity.ok(ApiResponse.success("Updated", cartService.updateItem(userId, itemId, quantity)));
     }
 
-    @DeleteMapping("/{userId}/items/{itemId}")
-    public ResponseEntity<ApiResponse<Void>> remove(@PathVariable String userId, @PathVariable Long itemId) {
+    @DeleteMapping("/items/{itemId}")
+    public ResponseEntity<ApiResponse<Void>> remove(@RequestHeader(USER_ID_HEADER) String userId,
+                                                    @PathVariable Long itemId) {
         cartService.removeItem(userId, itemId);
         return ResponseEntity.ok(ApiResponse.success("Removed", null));
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponse<Void>> clear(@PathVariable String userId) {
+    @DeleteMapping("/items")
+    public ResponseEntity<ApiResponse<Void>> clear(@RequestHeader(USER_ID_HEADER) String userId) {
         cartService.clearCart(userId);
         return ResponseEntity.ok(ApiResponse.success("Cart cleared", null));
     }
