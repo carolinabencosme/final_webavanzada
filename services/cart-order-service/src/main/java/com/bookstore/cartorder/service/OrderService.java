@@ -32,17 +32,18 @@ public class OrderService {
     private final RabbitTemplate rabbitTemplate;
 
     @Transactional
-    public OrderDto checkout(String userId, CheckoutRequest req) {
+    public OrderDto checkout(String userId, String userEmail, CheckoutRequest req) {
         List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
         if (cartItems.isEmpty()) throw new RuntimeException("Cart is empty");
         BigDecimal total = cartTotal(cartItems);
-        String paymentId = paymentProvider.charge(req.getUserEmail(), total, req.getCardNumber(), req.getCardExpiry(), req.getCardCvc());
-        return finalizePaidOrder(userId, req.getUserEmail(), cartItems, total, paymentId);
+        String resolvedEmail = requireUserEmail(userEmail);
+        String paymentId = paymentProvider.charge(resolvedEmail, total, req.getCardNumber(), req.getCardExpiry(), req.getCardCvc());
+        return finalizePaidOrder(userId, resolvedEmail, cartItems, total, paymentId);
     }
 
     /** Create PayPal order + local PENDING order; cart unchanged until capture. */
     @Transactional
-    public Map<String, String> createPayPalOrder(String userId, PayPalCreateRequest req) {
+    public Map<String, String> createPayPalOrder(String userId, String userEmail, PayPalCreateRequest req) {
         if (!payPalClient.isConfigured()) {
             throw new IllegalStateException("PayPal is not configured (set PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, paypal.enabled=true)");
         }
@@ -53,7 +54,7 @@ public class OrderService {
         BigDecimal total = cartTotal(cartItems);
         Order order = Order.builder()
             .userId(userId)
-            .userEmail(req.getUserEmail())
+            .userEmail(requireUserEmail(userEmail))
             .status(OrderStatus.PENDING)
             .total(total)
             .createdAt(LocalDateTime.now())
@@ -74,7 +75,7 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDto capturePayPalOrder(String userId, PayPalCaptureRequest req) {
+    public OrderDto capturePayPalOrder(String userId, String userEmail, PayPalCaptureRequest req) {
         if (!payPalClient.isConfigured()) {
             throw new IllegalStateException("PayPal is not configured");
         }
@@ -90,7 +91,7 @@ public class OrderService {
         }
 
         String captureId = payPalClient.captureOrder(req.getPaypalOrderId());
-        return finalizePaidOrder(userId, req.getUserEmail(), cartItems, order.getTotal(), captureId);
+        return finalizePaidOrder(userId, requireUserEmail(userEmail), cartItems, order.getTotal(), captureId);
     }
 
     private OrderDto finalizePaidOrder(String userId, String userEmail, List<CartItem> cartItems, BigDecimal total, String paymentId) {
@@ -122,6 +123,14 @@ public class OrderService {
         return cartItems.stream()
             .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
             .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+
+    private static String requireUserEmail(String userEmail) {
+        if (userEmail == null || userEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Missing user email. Send header X-User-Email or include userEmail in request body.");
+        }
+        return userEmail.trim();
     }
 
     private static List<OrderItem> buildOrderItems(Order order, List<CartItem> cartItems) {
@@ -168,10 +177,9 @@ public class OrderService {
     }
 
     public OrderDto getOrder(String userId, Long orderId) {
-        return orderRepository.findById(orderId)
-            .filter(o -> o.getUserId().equals(userId))
+        return orderRepository.findByIdAndUserId(orderId, userId)
             .map(this::toDto)
-            .orElseThrow(() -> new RuntimeException("Order not found"));
+            .orElseThrow(() -> new RuntimeException("Order not found for authenticated user"));
     }
 
     private OrderDto toDto(Order o) {
