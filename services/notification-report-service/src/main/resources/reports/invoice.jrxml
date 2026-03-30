@@ -19,24 +19,24 @@
     <title>
         <band height="90">
             <staticText>
-                <reportElement x="0" y="10" width="555" height="24" uuid="a1"/>
+                <reportElement x="0" y="10" width="555" height="24" uuid="b2c3d4e5-0001-4000-8000-0000000000a1"/>
                 <textElement textAlignment="Center">
                     <font size="16" isBold="true"/>
                 </textElement>
                 <text><![CDATA[BookStore — Invoice]]></text>
             </staticText>
             <textField>
-                <reportElement x="0" y="40" width="280" height="16" uuid="a2"/>
+                <reportElement x="0" y="40" width="280" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a2"/>
                 <textElement/>
                 <textFieldExpression><![CDATA["Invoice #: " + $P{ORDER_NUMBER}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="280" y="40" width="275" height="16" uuid="a3"/>
+                <reportElement x="280" y="40" width="275" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a3"/>
                 <textElement textAlignment="Right"/>
                 <textFieldExpression><![CDATA["Date: " + $P{ORDER_DATE}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="0" y="58" width="555" height="16" uuid="a4"/>
+                <reportElement x="0" y="58" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a4"/>
                 <textElement/>
                 <textFieldExpression><![CDATA["Customer: " + $P{CUSTOMER_EMAIL}]]></textFieldExpression>
             </textField>
@@ -45,25 +45,25 @@
     <columnHeader>
         <band height="22">
             <staticText>
-                <reportElement x="0" y="2" width="280" height="18" uuid="h1"/>
+                <reportElement x="0" y="2" width="280" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000b1"/>
                 <box><pen lineWidth="0.5f"/></box>
                 <textElement><font isBold="true"/></textElement>
                 <text><![CDATA[Title]]></text>
             </staticText>
             <staticText>
-                <reportElement x="280" y="2" width="50" height="18" uuid="h2"/>
+                <reportElement x="280" y="2" width="50" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000b2"/>
                 <box><pen lineWidth="0.5f"/></box>
                 <textElement textAlignment="Center"><font isBold="true"/></textElement>
                 <text><![CDATA[Qty]]></text>
             </staticText>
             <staticText>
-                <reportElement x="330" y="2" width="100" height="18" uuid="h3"/>
+                <reportElement x="330" y="2" width="100" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000b3"/>
                 <box><pen lineWidth="0.5f"/></box>
                 <textElement textAlignment="Right"><font isBold="true"/></textElement>
                 <text><![CDATA[Price]]></text>
             </staticText>
             <staticText>
-                <reportElement x="430" y="2" width="125" height="18" uuid="h4"/>
+                <reportElement x="430" y="2" width="125" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000b4"/>
                 <box><pen lineWidth="0.5f"/></box>
                 <textElement textAlignment="Right"><font isBold="true"/></textElement>
                 <text><![CDATA[Line total]]></text>
@@ -73,24 +73,24 @@
     <detail>
         <band height="20">
             <textField isStretchWithOverflow="true">
-                <reportElement x="0" y="0" width="280" height="18" uuid="d1"/>
+                <reportElement x="0" y="0" width="280" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000c1"/>
                 <box leftPadding="2"><pen lineWidth="0.25f"/></box>
                 <textFieldExpression><![CDATA[$F{bookTitle}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="280" y="0" width="50" height="18" uuid="d2"/>
+                <reportElement x="280" y="0" width="50" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000c2"/>
                 <box><pen lineWidth="0.25f"/></box>
                 <textElement textAlignment="Center"/>
                 <textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="330" y="0" width="100" height="18" uuid="d3"/>
+                <reportElement x="330" y="0" width="100" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000c3"/>
                 <box><pen lineWidth="0.25f"/></box>
                 <textElement textAlignment="Right"/>
                 <textFieldExpression><![CDATA[$F{unitPrice}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="430" y="0" width="125" height="18" uuid="d4"/>
+                <reportElement x="430" y="0" width="125" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000c4"/>
                 <box><pen lineWidth="0.25f"/></box>
                 <textElement textAlignment="Right"/>
                 <textFieldExpression><![CDATA[$F{lineTotal}]]></textFieldExpression>
@@ -100,17 +100,17 @@
     <summary>
         <band height="70">
             <textField>
-                <reportElement x="330" y="10" width="225" height="16" uuid="s1"/>
+                <reportElement x="330" y="10" width="225" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000d1"/>
                 <textElement textAlignment="Right"/>
                 <textFieldExpression><![CDATA["Subtotal: " + $P{SUBTOTAL}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="330" y="28" width="225" height="16" uuid="s2"/>
+                <reportElement x="330" y="28" width="225" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000d2"/>
                 <textElement textAlignment="Right"/>
                 <textFieldExpression><![CDATA["Tax (10%): " + $P{TAX}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="330" y="48" width="225" height="18" uuid="s3"/>
+                <reportElement x="330" y="48" width="225" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000d3"/>
                 <textElement textAlignment="Right">
                     <font size="12" isBold="true"/>
                 </textElement>

@@ -1,11 +1,4 @@
 import api from '../lib/axios'
-import { getUser } from '../store/authStore'
-
-function uid(): string {
-  const u = getUser()
-  if (!u?.userId) throw new Error('Not authenticated')
-  return u.userId
-}
 
 export interface CheckoutBody {
   userEmail: string
@@ -33,24 +26,22 @@ export interface OrderStats {
 }
 
 export const checkout = (body: CheckoutBody) =>
-  api.post(`/orders/${uid()}/checkout`, body).then((r) => r.data.data)
+  api.post('/orders/checkout', body).then((r) => r.data.data)
 
 export const createPayPalOrder = (body: PayPalCreateBody) =>
-  api.post(`/orders/${uid()}/paypal/create`, body).then((r) => r.data.data) as Promise<{
+  api.post('/orders/paypal/create', body).then((r) => r.data.data) as Promise<{
     paypalOrderId: string
     approvalUrl: string
     localOrderId?: string
   }>
 
 export const capturePayPalOrder = (body: PayPalCaptureBody) =>
-  api.post(`/orders/${uid()}/paypal/capture`, body).then((r) => r.data.data)
+  api.post('/orders/paypal/capture', body).then((r) => r.data.data)
 
-export const getMyOrders = () => api.get(`/orders/${uid()}`).then((r) => r.data.data)
+export const getMyOrders = () => api.get('/orders').then((r) => r.data.data)
 
-export const getOrderById = (id: string) =>
-  api.get(`/orders/${uid()}/${id}`).then((r) => r.data.data)
+export const getOrderById = (id: string) => api.get(`/orders/${id}`).then((r) => r.data.data)
 
-/** Todas las compras (solo rol ADMIN en backend). */
 export const getAllOrdersAdmin = () => api.get('/orders/admin/all').then((r) => r.data.data)
 
 export const getAdminStats = () => api.get('/orders/admin/stats').then((r) => r.data.data as OrderStats)

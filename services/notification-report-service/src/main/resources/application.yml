@@ -14,14 +14,15 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:noreply@bookstore.com}
-    password: ${MAIL_PASSWORD:password}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
-          auth: true
+          # MailHog (1025) no usa auth ni STARTTLS; Gmail/SMTP real: MAIL_SMTP_AUTH=true MAIL_STARTTLS_ENABLE=true
+          auth: ${MAIL_SMTP_AUTH:false}
           starttls:
-            enable: true
+            enable: ${MAIL_STARTTLS_ENABLE:false}
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
 eureka:

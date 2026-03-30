@@ -51,7 +51,7 @@ El proyecto demuestra el uso de:
                                           └───────┬───────┘
                                                   │ SMTP
                                           ┌───────▼───────┐
-                                          │   MailHog     │
+                                          │   Mailpit     │
                                           │  :1025/:8025  │
                                           └───────────────┘
 
@@ -85,7 +85,7 @@ El proyecto demuestra el uso de:
 | BD relacional     | PostgreSQL                   | PostgreSQL 15           |
 | BD documental     | MongoDB                      | MongoDB 6               |
 | Trazabilidad      | Zipkin                       | OpenZipkin              |
-| Correo (dev)      | MailHog                      | MailHog                 |
+| Correo (dev)      | Mailpit                      | Mailpit                 |
 
 ---
 
@@ -155,7 +155,7 @@ Consumidor de eventos RabbitMQ que:
 | **RabbitMQ**         | Message broker confiable para comunicación asíncrona entre servicios          |
 | **Zipkin**           | Trazabilidad distribuida para depuración de flujos entre microservicios       |
 | **Docker Compose**   | Orquestación local simple y reproducible para todos los contenedores          |
-| **MailHog**          | Servidor SMTP de prueba que captura emails sin enviarlos realmente            |
+| **Mailpit**          | Servidor SMTP de prueba que captura emails sin enviarlos realmente (UI en :8025) |
 | **Nginx**            | Servidor ligero para servir el frontend estático como contenedor              |
 
 ---
@@ -202,7 +202,7 @@ docker-compose down -v
 
 Docker Compose respeta las dependencias definidas con `condition: service_healthy`:
 
-1. `postgres`, `mongodb`, `rabbitmq`, `zipkin`, `mailhog`
+1. `postgres`, `mongodb`, `rabbitmq`, `zipkin`, `mailpit`
 2. `discovery-service` (Eureka)
 3. `config-service`, `api-gateway`
 4. Todos los microservicios de negocio
@@ -213,7 +213,7 @@ Docker Compose respeta las dependencias definidas con `condition: service_health
 
 ```bash
 # Terminal 1 — Infraestructura solamente
-docker-compose up -d postgres mongodb rabbitmq zipkin mailhog
+docker-compose up -d postgres mongodb rabbitmq zipkin mailpit
 
 # Terminal 2 — Discovery
 cd services/discovery-service
@@ -360,7 +360,7 @@ Usuario → [Frontend :3000]
                                               ↓ publica "order.confirmed" en RabbitMQ
                                          notification-report-service
                                               ↓ envía email de confirmación
-                                         MailHog (:8025) captura el email
+                                         Mailpit (:8025) captura el email
         → GET  /api/orders               → cart-order-service (historial)
         → GET  /api/orders/{orderId}     → cart-order-service (detalle)
         → POST /api/reviews              → review-service (publicar reseña)
@@ -381,7 +381,7 @@ Usuario → [Frontend :3000]
 | `MONGO_DB`           | Nombre de la base de datos Mongo         | `catalogdb` / `notificationdb`                |
 | `RABBITMQ_HOST`      | Host de RabbitMQ                         | `localhost` / `rabbitmq` en Docker            |
 | `EUREKA_HOST`        | Host del servidor Eureka                 | `localhost` / `discovery-service` en Docker   |
-| `MAIL_HOST`          | Host del servidor SMTP                   | `mailhog`                                     |
+| `MAIL_HOST`          | Host del servidor SMTP                   | `mailpit`                                     |
 | `MAIL_PORT`          | Puerto SMTP                              | `1025`                                        |
 | `PAYMENT_MOCK`       | Activar pago simulado (sin PayPal real)  | `true`                                        |
 | `PAYPAL_CLIENT_ID`   | Client ID de PayPal (producción)         | —                                             |
@@ -398,7 +398,7 @@ Usuario → [Frontend :3000]
 | **Eureka Dashboard**            | http://localhost:8761                |
 | **RabbitMQ Management**         | http://localhost:15672 (guest/guest) |
 | **Zipkin UI**                   | http://localhost:9411                |
-| **MailHog UI**                  | http://localhost:8025                |
+| **Mailpit UI**                  | http://localhost:8025                |
 | **Config Service**              | http://localhost:8888                |
 | Auth Service (directo)          | http://localhost:8081                |
 | Auth Service instancia 2        | http://localhost:8181                |
@@ -474,7 +474,7 @@ curl http://localhost:8080/api/orders/{orderId} \
 ```
 
 ### Minuto 5–6: Correo Transaccional
-> Abrir http://localhost:8025 — mostrar el email de confirmación de pedido recibido en MailHog.
+> Abrir http://localhost:8025 — mostrar el email de confirmación de pedido recibido en Mailpit.
 
 ### Minuto 6–7: Reseñas
 ```bash
@@ -529,7 +529,7 @@ curl http://localhost:8080/api/books \
 - [x] **Autenticación JWT** stateless
 - [x] **2 bases de datos diferentes** (PostgreSQL + MongoDB)
 - [x] **Mensajería asíncrona** con RabbitMQ (eventos de registro y pedido)
-- [x] **Correos transaccionales** con JavaMailSender + MailHog
+- [x] **Correos transaccionales** con JavaMailSender + Mailpit (dev)
 - [x] **Generación de PDF** (factura de pedido)
 - [x] **Alta disponibilidad** — 2 instancias de auth, catalog, cart-order y review
 - [x] **Balanceo de carga** vía Eureka + Spring Cloud LoadBalancer
@@ -656,7 +656,7 @@ curl -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"nombre":"Test User","email":"test@ejemplo.com","password":"Test1234!"}'
 
-# 2. Verificar el email de bienvenida en MailHog
+# 2. Verificar el email de bienvenida en Mailpit
 # Abrir http://localhost:8025
 # Debe aparecer un email de bienvenida en la bandeja de entrada
 
@@ -668,7 +668,7 @@ export TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
 curl -X POST http://localhost:8080/api/orders \
   -H "Authorization: Bearer $TOKEN"
 
-# 4. Volver a MailHog — debe aparecer un nuevo email de confirmación de pedido
+# 4. Volver a Mailpit — debe aparecer un nuevo email de confirmación de pedido
 # El email incluye el número de pedido, lista de libros y total
 ```
 

@@ -70,9 +70,10 @@ services:
     networks:
       - bookstore-network
 
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: bookstore-mailhog
+  # Mailpit: mismo uso que MailHog (SMTP 1025, UI 8025) pero UI moderna sin el bug Angular /api/v2/jim 404
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: bookstore-mailpit
     ports:
       - "1025:1025"
       - "8025:8025"
@@ -364,8 +365,10 @@ services:
       MONGO_HOST: mongodb
       MONGO_DB: notificationdb
       RABBITMQ_HOST: rabbitmq
-      MAIL_HOST: mailhog
+      MAIL_HOST: mailpit
       MAIL_PORT: 1025
+      MAIL_SMTP_AUTH: "false"
+      MAIL_STARTTLS_ENABLE: "false"
       EUREKA_HOST: discovery-service
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     depends_on:
@@ -373,7 +376,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      mailhog:
+      mailpit:
         condition: service_started
       discovery-service:
         condition: service_healthy
