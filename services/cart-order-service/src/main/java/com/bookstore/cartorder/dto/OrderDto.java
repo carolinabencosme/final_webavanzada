@@ -9,6 +9,11 @@ public class OrderDto {
     private Long id;
     private Long orderId;
     private String userId, userEmail, paymentId;
+    private String paypalOrderId;
+    private String paypalCaptureId;
+    private String paypalCaptureStatus;
+    private String payerId;
+    private String transactionRef;
     private OrderStatus status;
     private BigDecimal total;
     private LocalDateTime createdAt;

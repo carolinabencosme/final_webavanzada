@@ -33,6 +33,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserIdAndStatus(String userId, OrderStatus status);
 
     Optional<Order> findByPaymentIdAndUserId(String paymentId, String userId);
+    Optional<Order> findByPaypalOrderIdAndUserId(String paypalOrderId, String userId);
 
     Optional<Order> findByIdAndUserId(Long id, String userId);
 }
