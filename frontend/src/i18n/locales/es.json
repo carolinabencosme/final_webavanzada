@@ -101,10 +101,17 @@
     "paypalCheckout": "Pagar con PayPal (sandbox)",
     "paypalHint": "PayPal usa el entorno sandbox: crea una cuenta de prueba en developer.paypal.com y define PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET en el entorno del servicio de pedidos.",
     "paypalCreateErr": "No se pudo iniciar PayPal. ¿Está configurado el sandbox?",
+    "paypalSdkLoadErr": "No se pudo cargar el SDK de PayPal.",
+    "paypalConfigInvalid": "La configuración de PayPal es inválida o incompleta.",
+    "paypalTokenErr": "El token de PayPal no es válido o ya expiró.",
+    "paypalProviderMismatch": "El proveedor del pedido no coincide con PayPal.",
+    "paypalCreateOrderErr": "No se pudo crear la orden en PayPal.",
+    "paypalCaptureErrDetailed": "PayPal aprobó el pago, pero no pudimos capturarlo.",
     "paypalCaptureErr": "No se pudo confirmar el pago en PayPal.",
     "paypalMissingToken": "Falta el token de PayPal en la URL de retorno.",
     "paypalProcessing": "Confirmando pago con PayPal…",
-    "backToCart": "Volver al carrito"
+    "backToCart": "Volver al carrito",
+    "unknown": "Error inesperado. Inténtalo nuevamente."
   },
   "orders": {
     "loading": "Cargando pedidos…",
