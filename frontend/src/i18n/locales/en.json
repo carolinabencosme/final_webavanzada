@@ -101,10 +101,17 @@
     "paypalCheckout": "Pay with PayPal (sandbox)",
     "paypalHint": "PayPal uses the sandbox: create test credentials at developer.paypal.com and set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET for the order service.",
     "paypalCreateErr": "Could not start PayPal. Is the sandbox configured?",
+    "paypalSdkLoadErr": "Could not load the PayPal SDK.",
+    "paypalConfigInvalid": "PayPal configuration is invalid or incomplete.",
+    "paypalTokenErr": "The PayPal token is invalid or expired.",
+    "paypalProviderMismatch": "This order provider does not match PayPal.",
+    "paypalCreateOrderErr": "Could not create the PayPal order.",
+    "paypalCaptureErrDetailed": "PayPal approved the payment, but capture failed.",
     "paypalCaptureErr": "Could not confirm the PayPal payment.",
     "paypalMissingToken": "Missing PayPal token in the return URL.",
     "paypalProcessing": "Confirming PayPal payment…",
-    "backToCart": "Back to cart"
+    "backToCart": "Back to cart",
+    "unknown": "Unexpected error. Please try again."
   },
   "orders": {
     "loading": "Loading orders…",

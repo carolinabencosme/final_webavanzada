@@ -9,33 +9,65 @@ import {
   capturePayPalOrder,
   checkout,
   createPayPalOrder,
+  getOrderApiErrorCode,
   getOrderApiErrorMessage,
   getPayPalPublicConfig,
 } from '../api/orders'
 import { PAYPAL_SDK_ERRORS, PayPalSdkError, loadPayPalSdk } from '../lib/paypalSdk'
 import { getUser } from '../store/authStore'
 
-const mapPayPalError = (error: unknown, t: (key: string) => string) => {
-  const mappedByCode = getOrderApiErrorMessage(error, '', {
-    PAYPAL_CREATE_ORDER_FAILED: t('cart.paypalCreateErr'),
-    PAYPAL_CAPTURE_FAILED: t('cart.paypalCaptureErr'),
-    PAYPAL_TOKEN_FAILED: t('cart.paypalCreateErr'),
-    PAYPAL_CONFIG_INVALID: t('cart.paypalCreateErr'),
-  })
-  if (mappedByCode) return mappedByCode
+type PayPalReadableError = {
+  message: string
+  detail?: string
+}
+
+const mapPayPalError = (error: unknown, t: (key: string) => string): PayPalReadableError => {
+  const backendErrorMap: Record<string, PayPalReadableError> = {
+    PAYPAL_CONFIG_INVALID: {
+      message: t('cart.paypalConfigInvalid'),
+      detail: t('cart.paypalHint'),
+    },
+    PAYPAL_TOKEN_FAILED: {
+      message: t('cart.paypalTokenErr'),
+      detail: t('cart.paypalMissingToken'),
+    },
+    PAYPAL_PROVIDER_MISMATCH: {
+      message: t('cart.paypalProviderMismatch'),
+      detail: t('cart.backToCart'),
+    },
+    PAYPAL_CREATE_ORDER_FAILED: {
+      message: t('cart.paypalCreateOrderErr'),
+      detail: t('cart.paypalCreateErr'),
+    },
+    PAYPAL_CAPTURE_FAILED: {
+      message: t('cart.paypalCaptureErrDetailed'),
+      detail: t('cart.paypalCaptureErr'),
+    },
+  }
+
+  const backendCode = getOrderApiErrorCode(error)
+  if (backendCode && backendErrorMap[backendCode]) return backendErrorMap[backendCode]
 
   const msg = error instanceof Error ? error.message : String(error)
 
   if (error instanceof PayPalSdkError) {
-    if (error.code === PAYPAL_SDK_ERRORS.SDK_CLIENT_ID_MISSING) return t('cart.paypalCreateErr')
-    if (error.code === PAYPAL_SDK_ERRORS.SDK_LOAD_FAILED) return t('cart.paypalCreateErr')
+    if (error.code === PAYPAL_SDK_ERRORS.SDK_CLIENT_ID_MISSING) {
+      return { message: t('cart.paypalConfigInvalid'), detail: t('cart.paypalHint') }
+    }
+    if (error.code === PAYPAL_SDK_ERRORS.SDK_LOAD_FAILED) {
+      return { message: t('cart.paypalSdkLoadErr'), detail: t('cart.paypalCreateErr') }
+    }
   }
 
-  if (/INSTRUMENT_DECLINED|payer/i.test(msg)) return t('cart.paypalCaptureErr')
-  if (/create/i.test(msg)) return t('cart.paypalCreateErr')
-  if (/capture|approve|order/i.test(msg)) return t('cart.paypalCaptureErr')
+  if (/INSTRUMENT_DECLINED|payer/i.test(msg)) {
+    return { message: t('cart.paypalCaptureErrDetailed'), detail: t('cart.paypalCaptureErr') }
+  }
+  if (/create/i.test(msg)) return { message: t('cart.paypalCreateOrderErr'), detail: t('cart.paypalCreateErr') }
+  if (/capture|approve|order/i.test(msg)) {
+    return { message: t('cart.paypalCaptureErrDetailed'), detail: t('cart.paypalCaptureErr') }
+  }
 
-  return t('cart.orderErr')
+  return { message: t('cart.unknown') }
 }
 
 export default function CartPage() {
@@ -43,7 +75,7 @@ export default function CartPage() {
   const qc = useQueryClient()
   const user = getUser()
   const { data, isLoading } = useQuery({ queryKey: ['cart'], queryFn: getCart })
-  const [paypalErr, setPaypalErr] = useState<string | null>(null)
+  const [paypalErr, setPaypalErr] = useState<PayPalReadableError | null>(null)
   const mountedButtonsRef = useRef<{ close: () => void } | null>(null)
 
   const paypalConfigQuery = useQuery({
@@ -119,7 +151,7 @@ export default function CartPage() {
           onError: (err) => {
             const readable = mapPayPalError(err, t)
             setPaypalErr(readable)
-            toast.error(readable)
+            toast.error(readable.detail ? `${readable.message} ${readable.detail}` : readable.message)
           },
         })
 
@@ -129,7 +161,7 @@ export default function CartPage() {
         if (cancelled) return
         const readable = mapPayPalError(err, t)
         setPaypalErr(readable)
-        toast.error(readable)
+        toast.error(readable.detail ? `${readable.message} ${readable.detail}` : readable.message)
       }
     }
 
@@ -239,7 +271,12 @@ export default function CartPage() {
               </div>
             </div>
             <p className="text-xs text-ink-muted max-w-xl">{t('cart.paypalHint')}</p>
-            {paypalErr ? <p className="text-xs text-red-700">{paypalErr}</p> : null}
+            {paypalErr ? (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                <p className="font-medium">{paypalErr.message}</p>
+                {paypalErr.detail ? <p className="mt-1">{paypalErr.detail}</p> : null}
+              </div>
+            ) : null}
           </div>
         )}
       </div>
