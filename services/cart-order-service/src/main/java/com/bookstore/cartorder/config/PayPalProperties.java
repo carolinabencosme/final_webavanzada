@@ -14,4 +14,9 @@ public class PayPalProperties {
     private boolean enabled = false;
     /** Currency exposed to frontend SDK initialization */
     private String currency = "USD";
+    /**
+     * Enables diagnostic PayPal health endpoint in any environment.
+     * Keep false by default and use local/dev profiles for non-production access.
+     */
+    private boolean healthEnabled = false;
 }

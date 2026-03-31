@@ -26,6 +26,7 @@ paypal:
   base-url: ${PAYPAL_BASE_URL:https://api-m.sandbox.paypal.com}
   client-id: ${PAYPAL_CLIENT_ID:}
   client-secret: ${PAYPAL_CLIENT_SECRET:}
+  health-enabled: ${PAYPAL_HEALTH_ENABLED:false}
 eureka:
   client:
     service-url:
