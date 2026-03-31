@@ -3,6 +3,7 @@ package com.bookstore.cartorder.controller;
 import com.bookstore.cartorder.config.PayPalProperties;
 import com.bookstore.cartorder.exception.PayPalApiException;
 import com.bookstore.cartorder.payment.PayPalClient;
+import com.bookstore.cartorder.payment.PaymentProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -24,6 +25,7 @@ public class PayPalHealthController {
 
     private final PayPalProperties payPalProperties;
     private final PayPalClient payPalClient;
+    private final PaymentProvider paymentProvider;
     private final Environment environment;
 
     @GetMapping("/health")
@@ -36,7 +38,10 @@ public class PayPalHealthController {
             log.warn("paypal_health blocked activeProfiles={} healthEnabledProperty={}",
                 Arrays.toString(environment.getActiveProfiles()), propertyAllowed);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                "error", "Not Found"
+                "error", "Not Found",
+                "message", "Endpoint available only when local/dev profile is active or paypal.health-enabled=true",
+                "healthEnabledProperty", propertyAllowed,
+                "activeProfiles", environment.getActiveProfiles()
             ));
         }
 
@@ -45,49 +50,37 @@ public class PayPalHealthController {
         boolean baseUrlPresent = hasText(payPalProperties.getBaseUrl());
         boolean sdkConfigReady = payPalProperties.isEnabled() && clientIdPresent && clientSecretPresent && baseUrlPresent;
 
-        Map<String, Object> tokenCheck = new LinkedHashMap<>();
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("activeProfiles", environment.getActiveProfiles());
         details.put("healthEnabledProperty", propertyAllowed);
-        details.put("tokenCheckAttempted", false);
+        String tokenCheck = "skipped";
 
         if (sdkConfigReady) {
             try {
                 payPalClient.getAccessToken();
-                tokenCheck.put("attempted", true);
-                tokenCheck.put("ok", true);
-                tokenCheck.put("code", "PAYPAL_TOKEN_OK");
-                details.put("tokenCheckAttempted", true);
-                details.put("tokenCheckStatus", "success");
+                tokenCheck = "ok";
                 log.info("paypal_health token_check=success provider=paypal baseUrl={}", payPalProperties.getBaseUrl());
             } catch (PayPalApiException ex) {
-                tokenCheck.put("attempted", true);
-                tokenCheck.put("ok", false);
-                tokenCheck.put("code", ex.getInternalCode());
-                tokenCheck.put("status", ex.getUpstreamStatus() != null ? ex.getUpstreamStatus().value() : null);
-                tokenCheck.put("message", ex.getUserMessage());
-                details.put("tokenCheckAttempted", true);
-                details.put("tokenCheckStatus", "failed");
+                tokenCheck = "failed";
+                details.put("reason", ex.getInternalCode());
+                details.put("upstreamStatus", ex.getUpstreamStatus() != null ? ex.getUpstreamStatus().value() : null);
+                details.put("upstreamSnippet", ex.getUpstreamBodySnippet());
                 log.warn("paypal_health token_check=failed code={} upstreamStatus={} snippet={}",
                     ex.getInternalCode(),
                     ex.getUpstreamStatus() != null ? ex.getUpstreamStatus().value() : null,
                     ex.getUpstreamBodySnippet());
             }
         } else {
-            tokenCheck.put("attempted", false);
-            tokenCheck.put("ok", false);
-            tokenCheck.put("code", "PAYPAL_CONFIG_INCOMPLETE");
-            details.put("tokenCheckStatus", "skipped_incomplete_config");
+            details.put("reason", "PAYPAL_CONFIG_INCOMPLETE");
             log.info("paypal_health token_check=skipped enabled={} clientIdPresent={} clientSecretPresent={} baseUrlPresent={}",
                 payPalProperties.isEnabled(), clientIdPresent, clientSecretPresent, baseUrlPresent);
         }
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("enabled", payPalProperties.isEnabled());
-        response.put("provider", "paypal");
+        response.put("provider", paymentProvider.providerName());
         response.put("clientIdPresent", clientIdPresent);
         response.put("clientSecretPresent", clientSecretPresent);
-        response.put("baseUrl", payPalProperties.getBaseUrl());
         response.put("sdkConfigReady", sdkConfigReady);
         response.put("tokenCheck", tokenCheck);
         response.put("details", details);
