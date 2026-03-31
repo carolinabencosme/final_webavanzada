@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { getBookById } from '../api/catalog'
 import { addToCart } from '../api/cart'
 import { getUser } from '../store/authStore'
+import { getBookCover, PLACEHOLDER_COVER_URL } from '../lib/bookImages'
 
 export default function BookDetailPage() {
   const { t } = useTranslation()
@@ -58,11 +59,15 @@ export default function BookDetailPage() {
     coverUrl?: string
     averageRating?: number
     description?: string
+    imageUrl?: string
+    thumbnail?: string
+    images?: string[]
   }
 
-  const cover =
-    b.coverUrl ||
-    `https://via.placeholder.com/520x780/1a1f26/e8e0d5?text=${encodeURIComponent(b.title)}`
+  const cover = getBookCover(b)
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = PLACEHOLDER_COVER_URL
+  }
 
   return (
     <div className="bg-paper min-h-full">
@@ -73,7 +78,7 @@ export default function BookDetailPage() {
         <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-start">
           <div className="card overflow-hidden shadow-book">
             <div className="aspect-[2/3] bg-paper-deep">
-              <img src={cover} alt="" className="w-full h-full object-cover" />
+              <img src={cover} alt="" className="w-full h-full object-cover" onError={handleImageError} />
             </div>
           </div>
           <div>
