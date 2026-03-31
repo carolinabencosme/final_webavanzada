@@ -7,7 +7,12 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component @RequiredArgsConstructor @Slf4j
 public class BookDataSeeder implements ApplicationRunner {
@@ -15,7 +20,7 @@ public class BookDataSeeder implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (bookRepository.count() > 0) { log.info("Books already seeded"); return; }
+        deduplicateByIsbn();
         List<Book> books = List.of(
             book("The Great Gatsby","F. Scott Fitzgerald","Fiction","A story of wealth, love, and the American Dream in the 1920s.","12.99",4.2,1920,"https://covers.openlibrary.org/b/id/8739161-L.jpg","9780743273565",1925,192),
             book("To Kill a Mockingbird","Harper Lee","Classic","A profound story of racial injustice and loss of innocence in the American South.","14.99",4.8,1850,"https://covers.openlibrary.org/b/id/8228691-L.jpg","9780061935466",1960,281),
@@ -68,8 +73,108 @@ public class BookDataSeeder implements ApplicationRunner {
             book("Ender's Game","Orson Scott Card","Science Fiction","Gifted child Ender Wiggin is trained at a military school in space to fight alien invaders.","14.99",4.5,2800,"https://covers.openlibrary.org/b/id/7964654-L.jpg","9780812550702",1985,352),
             book("The Name of the Wind","Patrick Rothfuss","Fantasy","Kvothe tells the story of how he became the most notorious wizard his world has ever seen.","16.99",4.7,3200,"https://covers.openlibrary.org/b/id/6597283-L.jpg","9780756404079",2007,662)
         );
-        bookRepository.saveAll(books);
-        log.info("Seeded {} books", books.size());
+
+        int insertedCount = 0;
+        int updatedCount = 0;
+        for (Book seedBook : books) {
+            Book existing = bookRepository.findByIsbn(seedBook.getIsbn()).orElse(null);
+            if (existing == null) {
+                bookRepository.save(seedBook);
+                insertedCount++;
+                continue;
+            }
+
+            updateMutableFields(existing, seedBook);
+            bookRepository.save(existing);
+            updatedCount++;
+        }
+
+        log.info("Catalog seed sync completed. inserted={}, updated={}", insertedCount, updatedCount);
+    }
+
+    private void deduplicateByIsbn() {
+        Map<String, List<Book>> booksByIsbn = bookRepository.findAll().stream()
+            .filter(book -> book.getIsbn() != null && !book.getIsbn().isBlank())
+            .collect(Collectors.groupingBy(Book::getIsbn));
+
+        int removed = 0;
+        for (Map.Entry<String, List<Book>> entry : booksByIsbn.entrySet()) {
+            List<Book> duplicates = entry.getValue();
+            if (duplicates.size() <= 1) {
+                continue;
+            }
+
+            duplicates.sort(Comparator.comparing(Book::getId, Comparator.nullsLast(String::compareTo)));
+            Book canonical = duplicates.get(0);
+            List<Book> booksToRemove = new ArrayList<>(duplicates.subList(1, duplicates.size()));
+
+            Book mergedBook = mergeBooks(canonical, duplicates);
+            bookRepository.save(mergedBook);
+            bookRepository.deleteAll(booksToRemove);
+            removed += booksToRemove.size();
+        }
+
+        if (removed > 0) {
+            log.info("Removed {} duplicate book documents by ISBN", removed);
+        }
+    }
+
+    private Book mergeBooks(Book canonical, List<Book> duplicates) {
+        Book merged = Book.builder()
+            .id(canonical.getId())
+            .title(canonical.getTitle())
+            .author(canonical.getAuthor())
+            .genre(canonical.getGenre())
+            .description(canonical.getDescription())
+            .price(canonical.getPrice())
+            .coverUrl(canonical.getCoverUrl())
+            .stock(canonical.getStock())
+            .averageRating(canonical.getAverageRating())
+            .totalReviews(canonical.getTotalReviews())
+            .isbn(canonical.getIsbn())
+            .publishedYear(canonical.getPublishedYear())
+            .language(canonical.getLanguage())
+            .pages(canonical.getPages())
+            .build();
+
+        for (Book duplicate : duplicates) {
+            if (Objects.equals(duplicate.getId(), canonical.getId())) {
+                continue;
+            }
+            if (isBlank(merged.getTitle())) merged.setTitle(duplicate.getTitle());
+            if (isBlank(merged.getAuthor())) merged.setAuthor(duplicate.getAuthor());
+            if (isBlank(merged.getGenre())) merged.setGenre(duplicate.getGenre());
+            if (isBlank(merged.getDescription())) merged.setDescription(duplicate.getDescription());
+            if (merged.getPrice() == null) merged.setPrice(duplicate.getPrice());
+            if (isBlank(merged.getCoverUrl())) merged.setCoverUrl(duplicate.getCoverUrl());
+            if (merged.getStock() == 0) merged.setStock(duplicate.getStock());
+            if (merged.getAverageRating() == 0) merged.setAverageRating(duplicate.getAverageRating());
+            if (merged.getTotalReviews() == 0) merged.setTotalReviews(duplicate.getTotalReviews());
+            if (merged.getPublishedYear() == 0) merged.setPublishedYear(duplicate.getPublishedYear());
+            if (isBlank(merged.getLanguage())) merged.setLanguage(duplicate.getLanguage());
+            if (merged.getPages() == 0) merged.setPages(duplicate.getPages());
+        }
+
+        return merged;
+    }
+
+    private void updateMutableFields(Book target, Book source) {
+        target.setTitle(source.getTitle());
+        target.setAuthor(source.getAuthor());
+        target.setGenre(source.getGenre());
+        target.setDescription(source.getDescription());
+        target.setPrice(source.getPrice());
+        target.setCoverUrl(source.getCoverUrl());
+        target.setStock(source.getStock());
+        target.setAverageRating(source.getAverageRating());
+        target.setTotalReviews(source.getTotalReviews());
+        target.setPublishedYear(source.getPublishedYear());
+        target.setLanguage(source.getLanguage());
+        target.setPages(source.getPages());
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private Book book(String title, String author, String genre, String desc, String price,
