@@ -14,11 +14,11 @@ type PayPalReturnReadableError = {
 const mapPayPalReturnError = (error: unknown, t: (key: string) => string): PayPalReturnReadableError => {
   const backendCode = getOrderApiErrorCode(error)
   const byCode: Record<string, PayPalReturnReadableError> = {
-    PAYPAL_CONFIG_INVALID: { message: t('cart.paypalConfigInvalid'), detail: t('cart.paypalHint') },
+    PAYPAL_CONFIG_INVALID: { message: t('cart.paypalConfigInvalid') },
     PAYPAL_TOKEN_FAILED: { message: t('cart.paypalTokenErr'), detail: t('cart.paypalMissingToken') },
-    PAYPAL_PROVIDER_MISMATCH: { message: t('cart.paypalProviderMismatch'), detail: t('cart.backToCart') },
-    PAYPAL_CREATE_ORDER_FAILED: { message: t('cart.paypalCreateOrderErr'), detail: t('cart.paypalCreateErr') },
-    PAYPAL_CAPTURE_FAILED: { message: t('cart.paypalCaptureErrDetailed'), detail: t('cart.paypalCaptureErr') },
+    PAYPAL_PROVIDER_MISMATCH: { message: t('cart.paypalProviderMismatch') },
+    PAYPAL_CREATE_ORDER_FAILED: { message: t('cart.paypalCreateOrderErr') },
+    PAYPAL_CAPTURE_FAILED: { message: t('cart.paypalCaptureErrDetailed') },
   }
 
   if (backendCode && byCode[backendCode]) return byCode[backendCode]

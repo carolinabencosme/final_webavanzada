@@ -23,26 +23,14 @@ type PayPalReadableError = {
 
 const mapPayPalError = (error: unknown, t: (key: string) => string): PayPalReadableError => {
   const backendErrorMap: Record<string, PayPalReadableError> = {
-    PAYPAL_CONFIG_INVALID: {
-      message: t('cart.paypalConfigInvalid'),
-      detail: t('cart.paypalHint'),
-    },
+    PAYPAL_CONFIG_INVALID: { message: t('cart.paypalConfigInvalid') },
     PAYPAL_TOKEN_FAILED: {
       message: t('cart.paypalTokenErr'),
       detail: t('cart.paypalMissingToken'),
     },
-    PAYPAL_PROVIDER_MISMATCH: {
-      message: t('cart.paypalProviderMismatch'),
-      detail: t('cart.backToCart'),
-    },
-    PAYPAL_CREATE_ORDER_FAILED: {
-      message: t('cart.paypalCreateOrderErr'),
-      detail: t('cart.paypalCreateErr'),
-    },
-    PAYPAL_CAPTURE_FAILED: {
-      message: t('cart.paypalCaptureErrDetailed'),
-      detail: t('cart.paypalCaptureErr'),
-    },
+    PAYPAL_PROVIDER_MISMATCH: { message: t('cart.paypalProviderMismatch') },
+    PAYPAL_CREATE_ORDER_FAILED: { message: t('cart.paypalCreateOrderErr') },
+    PAYPAL_CAPTURE_FAILED: { message: t('cart.paypalCaptureErrDetailed') },
   }
 
   const backendCode = getOrderApiErrorCode(error)
@@ -52,19 +40,19 @@ const mapPayPalError = (error: unknown, t: (key: string) => string): PayPalReada
 
   if (error instanceof PayPalSdkError) {
     if (error.code === PAYPAL_SDK_ERRORS.SDK_CLIENT_ID_MISSING) {
-      return { message: t('cart.paypalConfigInvalid'), detail: t('cart.paypalHint') }
+      return { message: t('cart.paypalConfigInvalid') }
     }
     if (error.code === PAYPAL_SDK_ERRORS.SDK_LOAD_FAILED) {
-      return { message: t('cart.paypalSdkLoadErr'), detail: t('cart.paypalCreateErr') }
+      return { message: t('cart.paypalSdkLoadErr') }
     }
   }
 
   if (/INSTRUMENT_DECLINED|payer/i.test(msg)) {
-    return { message: t('cart.paypalCaptureErrDetailed'), detail: t('cart.paypalCaptureErr') }
+    return { message: t('cart.paypalCaptureErrDetailed') }
   }
-  if (/create/i.test(msg)) return { message: t('cart.paypalCreateOrderErr'), detail: t('cart.paypalCreateErr') }
+  if (/create/i.test(msg)) return { message: t('cart.paypalCreateOrderErr') }
   if (/capture|approve|order/i.test(msg)) {
-    return { message: t('cart.paypalCaptureErrDetailed'), detail: t('cart.paypalCaptureErr') }
+    return { message: t('cart.paypalCaptureErrDetailed') }
   }
 
   return { message: t('cart.unknown') }
@@ -100,9 +88,9 @@ export default function CartPage() {
     onError: (error) =>
       toast.error(
         getOrderApiErrorMessage(error, t('cart.orderErr'), {
-          PAYPAL_TOKEN_FAILED: t('cart.paypalCreateErr'),
-          PAYPAL_CREATE_ORDER_FAILED: t('cart.paypalCreateErr'),
-          PAYPAL_CAPTURE_FAILED: t('cart.paypalCaptureErr'),
+          PAYPAL_TOKEN_FAILED: t('cart.paypalTokenErr'),
+          PAYPAL_CREATE_ORDER_FAILED: t('cart.paypalCreateOrderErr'),
+          PAYPAL_CAPTURE_FAILED: t('cart.paypalCaptureErrDetailed'),
         })
       ),
   })
