@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { addToCart } from '../api/cart'
 import { getUser } from '../store/authStore'
 import { useQueryClient } from '@tanstack/react-query'
+import { getBookCover, PLACEHOLDER_COVER_URL } from '../lib/bookImages'
 
 interface Book {
   id: string
@@ -12,7 +13,10 @@ interface Book {
   author: string
   genre: string
   price: number
-  coverUrl: string
+  coverUrl?: string
+  imageUrl?: string
+  thumbnail?: string
+  images?: string[]
   averageRating: number
 }
 
@@ -41,9 +45,10 @@ export default function BookCard({ book }: Props) {
     }
   }
 
-  const cover =
-    book.coverUrl ||
-    `https://via.placeholder.com/280x420/1a1f26/e8e0d5?text=${encodeURIComponent(book.title.slice(0, 18))}`
+  const cover = getBookCover(book)
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = PLACEHOLDER_COVER_URL
+  }
 
   return (
     <article className="group flex flex-col h-full">
@@ -53,10 +58,7 @@ export default function BookCard({ book }: Props) {
             src={cover}
             alt=""
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-            onError={(e) => {
-              ;(e.target as HTMLImageElement).src =
-                'https://via.placeholder.com/280x420/1a1f26/e8e0d5?text=Book'
-            }}
+            onError={handleImageError}
           />
           <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
