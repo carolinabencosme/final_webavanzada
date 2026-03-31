@@ -29,7 +29,7 @@ spring:
         - id: cart-order-service
           uri: lb://cart-order-service
           predicates:
-            - Path=/api/cart/**,/api/orders/**,/api/checkout/**
+            - Path=/api/cart/**,/api/orders/**,/api/checkout/**,/api/payments/**
           filters:
             - StripPrefix=1
         - id: review-service
