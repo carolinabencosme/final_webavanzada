@@ -16,6 +16,11 @@ public class Order {
     private BigDecimal total;
     private LocalDateTime createdAt;
     private String paymentId;
+    private String paypalOrderId;
+    private String paypalCaptureId;
+    private String paypalCaptureStatus;
+    private String payerId;
+    private String transactionRef;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
     private List<OrderItem> items;
 }

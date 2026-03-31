@@ -82,23 +82,22 @@ public class OrderService {
         orderRepository.findByUserIdAndStatus(userId, OrderStatus.PENDING).forEach(orderRepository::delete);
 
         BigDecimal total = cartTotal(cartItems);
+        log.info("payment_provider_selected flow=paypal_create provider={}", paymentProvider.providerName());
+        Map<String, String> paypal = paymentProvider.createOrder(total, req.getReturnUrl(), req.getCancelUrl());
+        String paypalOrderId = paypal.get("paypalOrderId");
+
         Order order = Order.builder()
             .userId(userId)
             .userEmail(requireUserEmail(userEmail))
             .status(OrderStatus.PENDING)
             .total(total)
             .createdAt(LocalDateTime.now())
-            .paymentId("pending")
+            .paymentId(paypalOrderId)
+            .paypalOrderId(paypalOrderId)
             .build();
         List<OrderItem> orderItems = buildOrderItems(order, cartItems);
         order.setItems(orderItems);
         order = orderRepository.save(order);
-
-        log.info("payment_provider_selected flow=paypal_create provider={}", paymentProvider.providerName());
-        Map<String, String> paypal = paymentProvider.createOrder(total, req.getReturnUrl(), req.getCancelUrl());
-        String paypalOrderId = paypal.get("paypalOrderId");
-        order.setPaymentId(paypalOrderId);
-        orderRepository.save(order);
 
         Map<String, String> out = new HashMap<>(paypal);
         out.put("localOrderId", String.valueOf(order.getId()));
@@ -107,7 +106,7 @@ public class OrderService {
 
     @Transactional
     public OrderDto capturePayPalOrder(String userId, String userEmail, PayPalCaptureRequest req) {
-        Order order = orderRepository.findByPaymentIdAndUserId(req.getPaypalOrderId(), userId)
+        Order order = orderRepository.findByPaypalOrderIdAndUserId(req.getPaypalOrderId(), userId)
             .orElseThrow(() -> new RuntimeException("No pending PayPal order for this user"));
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new RuntimeException("Order is not pending payment");
@@ -120,7 +119,31 @@ public class OrderService {
 
         log.info("payment_provider_selected flow=paypal_capture provider={}", paymentProvider.providerName());
         String captureId = paymentProvider.captureOrder(req.getPaypalOrderId());
-        return finalizePaidOrder(userId, requireUserEmail(userEmail), cartItems, order.getTotal(), captureId);
+
+        order.setStatus(OrderStatus.PAID);
+        order.setUserEmail(requireUserEmail(userEmail));
+        order.setPaymentId(captureId);
+        order.setPaypalCaptureId(captureId);
+        order.setPaypalCaptureStatus("COMPLETED");
+        order.setTransactionRef(captureId);
+        Order saved = orderRepository.save(order);
+        cartItemRepository.deleteByUserId(userId);
+
+        String ordNum = "ORD-" + saved.getId();
+        OrderCompletedEvent event = OrderCompletedEvent.builder()
+            .orderId(String.valueOf(saved.getId()))
+            .orderNumber(ordNum)
+            .userId(userId)
+            .userEmail(saved.getUserEmail())
+            .total(saved.getTotal())
+            .createdAt(saved.getCreatedAt())
+            .items(saved.getItems().stream().map(oi -> OrderCompletedEvent.OrderItemInfo.builder()
+                .bookId(oi.getBookId()).bookTitle(oi.getBookTitle())
+                .quantity(oi.getQuantity()).price(oi.getPrice()).build()
+            ).collect(Collectors.toList())).build();
+
+        publishOrderConfirmedAfterCommit(saved, event);
+        return toDto(saved);
     }
 
     private OrderDto finalizePaidOrder(String userId, String userEmail, List<CartItem> cartItems, BigDecimal total, String paymentId) {
@@ -248,7 +271,13 @@ public class OrderService {
                 .quantity(oi.getQuantity()).price(oi.getPrice()).build()
         ).collect(Collectors.toList());
         return OrderDto.builder().id(o.getId()).orderId(o.getId()).userId(o.getUserId()).userEmail(o.getUserEmail())
-            .paymentId(o.getPaymentId()).status(o.getStatus()).total(o.getTotal())
+            .paymentId(o.getPaymentId())
+            .paypalOrderId(o.getPaypalOrderId())
+            .paypalCaptureId(o.getPaypalCaptureId())
+            .paypalCaptureStatus(o.getPaypalCaptureStatus())
+            .payerId(o.getPayerId())
+            .transactionRef(o.getTransactionRef())
+            .status(o.getStatus()).total(o.getTotal())
             .createdAt(o.getCreatedAt()).items(items).build();
     }
 }
