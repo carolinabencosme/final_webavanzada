@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
-import { capturePayPalOrder } from '../api/orders'
+import { capturePayPalOrder, getOrderApiErrorMessage } from '../api/orders'
 import { getUser } from '../store/authStore'
 
 export default function PayPalReturnPage() {
@@ -28,8 +28,13 @@ export default function PayPalReturnPage() {
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
       navigate('/my-orders', { replace: true })
     },
-    onError: () => {
-      setErr(t('cart.paypalCaptureErr'))
+    onError: (error) => {
+      setErr(
+        getOrderApiErrorMessage(error, t('cart.paypalCaptureErr'), {
+          PAYPAL_CAPTURE_FAILED: t('cart.paypalCaptureErr'),
+          PAYPAL_TOKEN_FAILED: t('cart.paypalCreateErr'),
+        })
+      )
     },
   })
 

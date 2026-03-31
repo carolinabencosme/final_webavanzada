@@ -49,7 +49,7 @@ public class OrderController {
             return ResponseEntity.badRequest().body(ApiResponse.builder()
                 .success(false)
                 .message("PayPal configuration is invalid. Verify clientId, clientSecret, and currency.")
-                .data(Map.of("code", "PAYPAL_CONFIG_INVALID"))
+                .code("PAYPAL_CONFIG_INVALID")
                 .build());
         }
 
