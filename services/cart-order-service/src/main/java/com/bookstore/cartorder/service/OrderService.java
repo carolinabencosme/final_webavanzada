@@ -4,6 +4,7 @@ import com.bookstore.cartorder.config.RabbitMQConfig;
 import com.bookstore.cartorder.dto.*;
 import com.bookstore.cartorder.entity.*;
 import com.bookstore.cartorder.event.OrderCompletedEvent;
+import com.bookstore.cartorder.exception.PayPalApiException;
 import com.bookstore.cartorder.payment.PaymentProvider;
 import com.bookstore.cartorder.repository.CartItemRepository;
 import com.bookstore.cartorder.repository.OrderRepository;
@@ -83,6 +84,7 @@ public class OrderService {
 
         BigDecimal total = cartTotal(cartItems);
         log.info("payment_provider_selected flow=paypal_create provider={}", paymentProvider.providerName());
+        requirePayPalProvider("paypal_create");
         Map<String, String> paypal = paymentProvider.createOrder(total, req.getReturnUrl(), req.getCancelUrl());
         String paypalOrderId = paypal.get("paypalOrderId");
 
@@ -118,6 +120,7 @@ public class OrderService {
         }
 
         log.info("payment_provider_selected flow=paypal_capture provider={}", paymentProvider.providerName());
+        requirePayPalProvider("paypal_capture");
         String captureId = paymentProvider.captureOrder(req.getPaypalOrderId());
 
         order.setStatus(OrderStatus.PAID);
@@ -205,6 +208,19 @@ public class OrderService {
         return cartItems.stream()
             .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
             .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private void requirePayPalProvider(String flow) {
+        String activeProvider = paymentProvider.providerName();
+        if (!"paypal".equals(activeProvider)) {
+            log.warn("paypal_provider_mismatch flow={} provider={}", flow, activeProvider);
+            throw new PayPalApiException(
+                "PAYPAL_PROVIDER_MISMATCH",
+                "PayPal checkout is unavailable because the mock payment provider is active.",
+                null,
+                null
+            );
+        }
     }
 
 
