@@ -4,7 +4,6 @@ import com.bookstore.cartorder.config.RabbitMQConfig;
 import com.bookstore.cartorder.dto.*;
 import com.bookstore.cartorder.entity.*;
 import com.bookstore.cartorder.event.OrderCompletedEvent;
-import com.bookstore.cartorder.payment.PayPalClient;
 import com.bookstore.cartorder.payment.PaymentProvider;
 import com.bookstore.cartorder.repository.CartItemRepository;
 import com.bookstore.cartorder.repository.OrderRepository;
@@ -32,7 +31,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartItemRepository cartItemRepository;
     private final PaymentProvider paymentProvider;
-    private final PayPalClient payPalClient;
     private final RabbitTemplate rabbitTemplate;
 
     /**
@@ -71,6 +69,7 @@ public class OrderService {
         if (cartItems.isEmpty()) throw new RuntimeException("Cart is empty");
         BigDecimal total = cartTotal(cartItems);
         String resolvedEmail = requireUserEmail(userEmail);
+        log.info("payment_provider_selected flow=checkout provider={}", paymentProvider.providerName());
         String paymentId = paymentProvider.charge(resolvedEmail, total, req.getCardNumber(), req.getCardExpiry(), req.getCardCvc());
         return finalizePaidOrder(userId, resolvedEmail, cartItems, total, paymentId);
     }
@@ -78,9 +77,6 @@ public class OrderService {
     /** Create PayPal order + local PENDING order; cart unchanged until capture. */
     @Transactional
     public Map<String, String> createPayPalOrder(String userId, String userEmail, PayPalCreateRequest req) {
-        if (!payPalClient.isConfigured()) {
-            throw new IllegalStateException("PayPal is not configured (set PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, paypal.enabled=true)");
-        }
         List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
         if (cartItems.isEmpty()) throw new RuntimeException("Cart is empty");
         orderRepository.findByUserIdAndStatus(userId, OrderStatus.PENDING).forEach(orderRepository::delete);
@@ -98,7 +94,8 @@ public class OrderService {
         order.setItems(orderItems);
         order = orderRepository.save(order);
 
-        Map<String, String> paypal = payPalClient.createOrder(total, req.getReturnUrl(), req.getCancelUrl());
+        log.info("payment_provider_selected flow=paypal_create provider={}", paymentProvider.providerName());
+        Map<String, String> paypal = paymentProvider.createOrder(total, req.getReturnUrl(), req.getCancelUrl());
         String paypalOrderId = paypal.get("paypalOrderId");
         order.setPaymentId(paypalOrderId);
         orderRepository.save(order);
@@ -110,9 +107,6 @@ public class OrderService {
 
     @Transactional
     public OrderDto capturePayPalOrder(String userId, String userEmail, PayPalCaptureRequest req) {
-        if (!payPalClient.isConfigured()) {
-            throw new IllegalStateException("PayPal is not configured");
-        }
         Order order = orderRepository.findByPaymentIdAndUserId(req.getPaypalOrderId(), userId)
             .orElseThrow(() -> new RuntimeException("No pending PayPal order for this user"));
         if (order.getStatus() != OrderStatus.PENDING) {
@@ -124,7 +118,8 @@ public class OrderService {
             throw new RuntimeException("Cart is empty; cannot complete order");
         }
 
-        String captureId = payPalClient.captureOrder(req.getPaypalOrderId());
+        log.info("payment_provider_selected flow=paypal_capture provider={}", paymentProvider.providerName());
+        String captureId = paymentProvider.captureOrder(req.getPaypalOrderId());
         return finalizePaidOrder(userId, requireUserEmail(userEmail), cartItems, order.getTotal(), captureId);
     }
 
