@@ -5,11 +5,25 @@ import { useTranslation } from 'react-i18next'
 import { Trash2, ShoppingBag } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { getCart, removeCartItem, updateCartItem, clearCart } from '../api/cart'
-import { capturePayPalOrder, checkout, createPayPalOrder, getPayPalPublicConfig } from '../api/orders'
+import {
+  capturePayPalOrder,
+  checkout,
+  createPayPalOrder,
+  getOrderApiErrorMessage,
+  getPayPalPublicConfig,
+} from '../api/orders'
 import { PAYPAL_SDK_ERRORS, PayPalSdkError, loadPayPalSdk } from '../lib/paypalSdk'
 import { getUser } from '../store/authStore'
 
 const mapPayPalError = (error: unknown, t: (key: string) => string) => {
+  const mappedByCode = getOrderApiErrorMessage(error, '', {
+    PAYPAL_CREATE_ORDER_FAILED: t('cart.paypalCreateErr'),
+    PAYPAL_CAPTURE_FAILED: t('cart.paypalCaptureErr'),
+    PAYPAL_TOKEN_FAILED: t('cart.paypalCreateErr'),
+    PAYPAL_CONFIG_INVALID: t('cart.paypalCreateErr'),
+  })
+  if (mappedByCode) return mappedByCode
+
   const msg = error instanceof Error ? error.message : String(error)
 
   if (error instanceof PayPalSdkError) {
@@ -51,7 +65,14 @@ export default function CartPage() {
       qc.invalidateQueries({ queryKey: ['orders'] })
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
     },
-    onError: () => toast.error(t('cart.orderErr')),
+    onError: (error) =>
+      toast.error(
+        getOrderApiErrorMessage(error, t('cart.orderErr'), {
+          PAYPAL_TOKEN_FAILED: t('cart.paypalCreateErr'),
+          PAYPAL_CREATE_ORDER_FAILED: t('cart.paypalCreateErr'),
+          PAYPAL_CAPTURE_FAILED: t('cart.paypalCaptureErr'),
+        })
+      ),
   })
 
   const items = data?.items ?? []

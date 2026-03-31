@@ -1,4 +1,5 @@
 import api from '../lib/axios'
+import type { AxiosError } from 'axios'
 
 export interface CheckoutBody {
   userEmail: string
@@ -29,6 +30,28 @@ export interface OrderStats {
   paidTodayCount: number
   paidTodayTotal: number
   last7DaysPaid: { date: string; total: number }[]
+}
+
+export interface ApiErrorPayload {
+  success?: boolean
+  message?: string
+  code?: string
+  details?: Record<string, unknown> | null
+}
+
+export const getOrderApiErrorCode = (error: unknown): string | undefined => {
+  const axiosError = error as AxiosError<ApiErrorPayload>
+  return axiosError.response?.data?.code
+}
+
+export const getOrderApiErrorMessage = (
+  error: unknown,
+  fallback: string,
+  mapping: Record<string, string>
+): string => {
+  const code = getOrderApiErrorCode(error)
+  if (code && mapping[code]) return mapping[code]
+  return fallback
 }
 
 export const checkout = (body: CheckoutBody) =>
