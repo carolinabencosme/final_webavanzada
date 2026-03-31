@@ -1,6 +1,7 @@
 package com.bookstore.catalog.document;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 @Document(collection = "books")
@@ -16,6 +17,7 @@ public class Book {
     private int stock;
     private double averageRating;
     private int totalReviews;
+    @Indexed(unique = true)
     private String isbn;
     private int publishedYear;
     private String language;
