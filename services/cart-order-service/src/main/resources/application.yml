@@ -22,6 +22,11 @@ spring:
 payment:
   mock: ${PAYMENT_MOCK:true}
 paypal:
+  # Local debug env:
+  # - PAYPAL_ENABLED=true
+  # - PAYMENT_MOCK=false (forces PayPalPaymentProvider as active provider)
+  # - PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET set with sandbox app credentials
+  # - Optional PAYPAL_HEALTH_ENABLED=true to expose /payments/paypal/health outside local/dev profiles
   enabled: ${PAYPAL_ENABLED:false}
   base-url: ${PAYPAL_BASE_URL:https://api-m.sandbox.paypal.com}
   client-id: ${PAYPAL_CLIENT_ID:}
