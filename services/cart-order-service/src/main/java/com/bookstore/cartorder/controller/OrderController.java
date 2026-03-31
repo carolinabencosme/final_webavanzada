@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,13 +43,54 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success("Order created successfully", orderService.checkout(identity.userId(), userEmail, req)));
     }
 
-    @GetMapping("/paypal/public-config")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getPublicPayPalConfig() {
-        Map<String, Object> data = new LinkedHashMap<>();
-        data.put("enabled", payPalProperties.isEnabled());
-        data.put("clientId", payPalProperties.getClientId());
-        data.put("currency", payPalProperties.getCurrency());
-        return ResponseEntity.ok(ApiResponse.success("OK", data));
+    @GetMapping({"/paypal/config", "/paypal/public-config"})
+    public ResponseEntity<ApiResponse<?>> getPublicPayPalConfig() {
+        if (isInvalidPayPalConfig()) {
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                .success(false)
+                .message("PayPal configuration is invalid. Verify clientId, clientSecret, and currency.")
+                .data(Map.of("code", "PAYPAL_CONFIG_INVALID"))
+                .build());
+        }
+
+        PayPalPublicConfigDto dto = PayPalPublicConfigDto.builder()
+            .enabled(payPalProperties.isEnabled())
+            .clientId(hasText(payPalProperties.getClientId()) ? payPalProperties.getClientId() : null)
+            .currency(payPalProperties.getCurrency())
+            .baseUrlMode(resolveBaseUrlMode(payPalProperties.getBaseUrl()))
+            .provider("paypal")
+            .build();
+
+        return ResponseEntity.ok(ApiResponse.success("OK", dto));
+    }
+
+    private boolean isInvalidPayPalConfig() {
+        if (!payPalProperties.isEnabled()) {
+            return false;
+        }
+        return !hasText(payPalProperties.getClientId())
+            || !hasText(payPalProperties.getClientSecret())
+            || !hasText(payPalProperties.getCurrency());
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
+
+    private String resolveBaseUrlMode(String baseUrl) {
+        if (!hasText(baseUrl)) {
+            return null;
+        }
+
+        String normalized = baseUrl.toLowerCase();
+        if (normalized.contains("sandbox")) {
+            return "sandbox";
+        }
+        if (normalized.contains("live")) {
+            return "live";
+        }
+
+        return null;
     }
 
     @PostMapping("/paypal/create")
