@@ -16,4 +16,6 @@ public class PayPalPublicConfigDto {
     /** Optional. Values: sandbox/live when inferable from PayPal base URL. */
     private String baseUrlMode;
     private String provider;
+    /** Optional message shown in the UI when PayPal is disabled or misconfigured. */
+    private String availabilityMessage;
 }

@@ -21,8 +21,11 @@ export interface PayPalCaptureBody {
 
 export interface PayPalPublicConfig {
   enabled: boolean
-  clientId: string
+  clientId: string | null
   currency: string
+  baseUrlMode?: 'sandbox' | 'live' | null
+  provider?: 'paypal' | 'mock'
+  availabilityMessage?: string | null
 }
 
 export interface OrderStats {

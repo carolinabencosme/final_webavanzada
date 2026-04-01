@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -6,14 +6,12 @@ import { Trash2, ShoppingBag } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { getCart, removeCartItem, updateCartItem, clearCart } from '../api/cart'
 import {
-  capturePayPalOrder,
   checkout,
   createPayPalOrder,
   getOrderApiErrorCode,
   getOrderApiErrorMessage,
   getPayPalPublicConfig,
 } from '../api/orders'
-import { PAYPAL_SDK_ERRORS, PayPalSdkError, loadPayPalSdk } from '../lib/paypalSdk'
 import { getUser } from '../store/authStore'
 
 type PayPalReadableError = {
@@ -38,15 +36,6 @@ const mapPayPalError = (error: unknown, t: (key: string) => string): PayPalReada
 
   const msg = error instanceof Error ? error.message : String(error)
 
-  if (error instanceof PayPalSdkError) {
-    if (error.code === PAYPAL_SDK_ERRORS.SDK_CLIENT_ID_MISSING) {
-      return { message: t('cart.paypalConfigInvalid') }
-    }
-    if (error.code === PAYPAL_SDK_ERRORS.SDK_LOAD_FAILED) {
-      return { message: t('cart.paypalSdkLoadErr') }
-    }
-  }
-
   if (/INSTRUMENT_DECLINED|payer/i.test(msg)) {
     return { message: t('cart.paypalCaptureErrDetailed') }
   }
@@ -64,7 +53,6 @@ export default function CartPage() {
   const user = getUser()
   const { data, isLoading } = useQuery({ queryKey: ['cart'], queryFn: getCart })
   const [paypalErr, setPaypalErr] = useState<PayPalReadableError | null>(null)
-  const mountedButtonsRef = useRef<{ close: () => void } | null>(null)
 
   const paypalConfigQuery = useQuery({
     queryKey: ['paypal-public-config'],
@@ -95,72 +83,29 @@ export default function CartPage() {
       ),
   })
 
-  const items = data?.items ?? []
-
-  useEffect(() => {
-    if (items.length === 0) return
-    if (!paypalConfigQuery.data?.enabled) return
-    if (checkoutMut.isPending) return
-
-    let cancelled = false
-
-    const mountButtons = async () => {
-      try {
-        setPaypalErr(null)
-        await loadPayPalSdk(paypalConfigQuery.data.clientId, paypalConfigQuery.data.currency)
-
-        if (cancelled || !window.paypal?.Buttons) return
-
-        mountedButtonsRef.current?.close()
-        const container = document.getElementById('paypal-button-container')
-        if (!container) return
-        container.innerHTML = ''
-
-        const origin = window.location.origin
-        const buttons = window.paypal.Buttons({
-          createOrder: async () => {
-            const created = await createPayPalOrder({
-              userEmail: user!.email,
-              returnUrl: `${origin}/checkout/paypal-return`,
-              cancelUrl: `${origin}/cart`,
-            })
-            return created.paypalOrderId
-          },
-          onApprove: async (approveData) => {
-            const paypalOrderId = approveData.orderID
-            if (!paypalOrderId) throw new Error('Missing PayPal order id in approval payload')
-
-            await capturePayPalOrder({ userEmail: user!.email, paypalOrderId })
-            toast.success(t('cart.orderOk'))
-            qc.invalidateQueries({ queryKey: ['cart'] })
-            qc.invalidateQueries({ queryKey: ['orders'] })
-            qc.invalidateQueries({ queryKey: ['admin-stats'] })
-          },
-          onError: (err) => {
-            const readable = mapPayPalError(err, t)
-            setPaypalErr(readable)
-            toast.error(readable.detail ? `${readable.message} ${readable.detail}` : readable.message)
-          },
-        })
-
-        mountedButtonsRef.current = buttons
-        await buttons.render('#paypal-button-container')
-      } catch (err) {
-        if (cancelled) return
-        const readable = mapPayPalError(err, t)
-        setPaypalErr(readable)
-        toast.error(readable.detail ? `${readable.message} ${readable.detail}` : readable.message)
+  const paypalCheckoutMut = useMutation({
+    mutationFn: async () => {
+      const origin = window.location.origin
+      return createPayPalOrder({
+        userEmail: user!.email,
+        returnUrl: `${origin}/checkout/paypal-return`,
+        cancelUrl: `${origin}/cart?paypal=cancelled`,
+      })
+    },
+    onSuccess: (created) => {
+      if (!created.approvalUrl) {
+        throw new Error('Missing PayPal approval URL')
       }
-    }
+      window.location.assign(created.approvalUrl)
+    },
+    onError: (error) => {
+      const readable = mapPayPalError(error, t)
+      setPaypalErr(readable)
+      toast.error(readable.detail ? `${readable.message} ${readable.detail}` : readable.message)
+    },
+  })
 
-    mountButtons()
-
-    return () => {
-      cancelled = true
-      mountedButtonsRef.current?.close()
-      mountedButtonsRef.current = null
-    }
-  }, [items.length, paypalConfigQuery.data, checkoutMut.isPending, t, qc, user])
+  const items = data?.items ?? []
 
   if (isLoading) {
     return <div className="max-w-3xl mx-auto px-4 py-20 text-ink-muted text-sm">{t('cart.loading')}</div>
@@ -240,17 +185,22 @@ export default function CartPage() {
                 {t('cart.clearAll')}
               </button>
 
-              {paypalConfigQuery.data?.enabled ? (
-                <div className="w-full sm:w-auto min-w-[280px]">
-                  <div id="paypal-button-container" className="w-full" />
-                </div>
-              ) : null}
-
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button
                   type="button"
+                  className="btn-secondary !normal-case !tracking-normal gap-2 w-full sm:w-auto justify-center"
+                  disabled={!paypalConfigQuery.data?.enabled || paypalCheckoutMut.isPending}
+                  onClick={() => {
+                    setPaypalErr(null)
+                    paypalCheckoutMut.mutate()
+                  }}
+                >
+                  {paypalCheckoutMut.isPending ? t('cart.processing') : t('cart.paypalCheckout')}
+                </button>
+                <button
+                  type="button"
                   className="btn-primary !normal-case !tracking-normal gap-2 w-full sm:w-auto justify-center"
-                  disabled={checkoutMut.isPending}
+                  disabled={checkoutMut.isPending || paypalCheckoutMut.isPending}
                   onClick={() => checkoutMut.mutate()}
                 >
                   <ShoppingBag className="w-5 h-5" strokeWidth={1.75} />
@@ -259,6 +209,11 @@ export default function CartPage() {
               </div>
             </div>
             <p className="text-xs text-ink-muted max-w-xl">{t('cart.paypalHint')}</p>
+            {paypalConfigQuery.data?.availabilityMessage ? (
+              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                {paypalConfigQuery.data.availabilityMessage}
+              </div>
+            ) : null}
             {paypalErr ? (
               <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
                 <p className="font-medium">{paypalErr.message}</p>
