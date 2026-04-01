@@ -1,6 +1,8 @@
 package com.bookstore.notification.service;
 import com.bookstore.notification.document.NotificationLog;
+import com.bookstore.notification.document.InvoiceSnapshot;
 import com.bookstore.notification.event.*;
+import com.bookstore.notification.repository.InvoiceSnapshotRepository;
 import com.bookstore.notification.repository.NotificationLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +14,8 @@ public class NotificationService {
     private final EmailService emailService;
     private final InvoiceService invoiceService;
     private final NotificationLogRepository logRepository;
+    private final InvoiceSnapshotRepository invoiceSnapshotRepository;
+    private final InvoiceAccessTokenService invoiceAccessTokenService;
 
     public void handleUserRegistered(UserRegisteredEvent event) {
         log.info("Handling user registered: {}", event.getEmail());
@@ -24,8 +28,10 @@ public class NotificationService {
     public void handleOrderCompleted(OrderCompletedEvent event) {
         log.info("Handling order completed: {}", event.getOrderNumber());
         try {
+            persistInvoiceSnapshot(event);
             byte[] pdf = invoiceService.generateInvoice(event);
-            emailService.sendOrderConfirmationEmail(event.getUserEmail(), event.getUserEmail(), event, pdf);
+            String invoiceToken = invoiceAccessTokenService.generate(event.getOrderId());
+            emailService.sendOrderConfirmationEmail(event.getUserEmail(), event.getUserEmail(), event, pdf, invoiceToken);
             logRepository.save(NotificationLog.builder()
                 .type("ORDER_CONFIRMATION").userId(event.getUserId()).email(event.getUserEmail())
                 .subject("Order Confirmation - " + event.getOrderNumber())
@@ -40,14 +46,45 @@ public class NotificationService {
     }
 
     public byte[] getOrGenerateInvoice(String orderId) {
-        OrderCompletedEvent mockEvent = new OrderCompletedEvent();
-        mockEvent.setOrderId(orderId);
-        mockEvent.setOrderNumber("ORD-" + orderId.substring(0, Math.min(8, orderId.length())));
-        mockEvent.setUserId("");
-        mockEvent.setUserEmail("customer@example.com");
-        mockEvent.setTotal(java.math.BigDecimal.ZERO);
-        mockEvent.setItems(List.of());
-        return invoiceService.generateInvoice(mockEvent);
+        OrderCompletedEvent event = getInvoiceEvent(orderId);
+        return invoiceService.generateInvoice(event);
+    }
+
+    public OrderCompletedEvent getInvoiceEvent(String orderId) {
+        InvoiceSnapshot snapshot = invoiceSnapshotRepository.findByOrderId(orderId)
+            .orElseThrow(() -> new InvoiceNotFoundException(orderId));
+        log.info("invoice_snapshot_loaded orderId={} orderNumber={} items={} total={}",
+            orderId,
+            snapshot.getOrderNumber(),
+            snapshot.getItems() == null ? 0 : snapshot.getItems().size(),
+            snapshot.getTotal());
+        return OrderCompletedEvent.builder()
+            .orderId(snapshot.getOrderId())
+            .orderNumber(snapshot.getOrderNumber())
+            .userId(snapshot.getUserId())
+            .userEmail(snapshot.getUserEmail())
+            .total(snapshot.getTotal())
+            .createdAt(snapshot.getCreatedAt())
+            .items(snapshot.getItems())
+            .build();
+    }
+
+    private void persistInvoiceSnapshot(OrderCompletedEvent event) {
+        InvoiceSnapshot snapshot = InvoiceSnapshot.builder()
+            .orderId(event.getOrderId())
+            .orderNumber(event.getOrderNumber())
+            .userId(event.getUserId())
+            .userEmail(event.getUserEmail())
+            .total(event.getTotal())
+            .createdAt(event.getCreatedAt())
+            .items(event.getItems())
+            .build();
+        invoiceSnapshotRepository.save(snapshot);
+        log.info("invoice_snapshot_saved orderId={} orderNumber={} items={} total={}",
+            event.getOrderId(),
+            event.getOrderNumber(),
+            event.getItems() == null ? 0 : event.getItems().size(),
+            event.getTotal());
     }
 
     public List<NotificationLog> getHistory() {
