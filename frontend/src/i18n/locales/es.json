@@ -111,6 +111,12 @@
     "paypalMissingToken": "Falta el token de PayPal en la URL de retorno.",
     "paypalProcessing": "Confirmando pago con PayPal…",
     "backToCart": "Volver al carrito",
+    "summaryTitle": "Resumen de la transacción",
+    "summaryOrder": "Orden:",
+    "summaryStatus": "Estado:",
+    "summaryDate": "Fecha:",
+    "goToOrders": "Ver mis pedidos",
+    "downloadInvoice": "Descargar factura",
     "unknown": "Error inesperado. Inténtalo nuevamente."
   },
   "orders": {

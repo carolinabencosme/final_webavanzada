@@ -258,6 +258,47 @@ Una vez que el sistema está corriendo, puede registrar usuarios vía API o usar
 |-------------------|---------------------------|--------------|-------|
 | Admin Principal   | admin@bookstore.com       | Admin1234!   | ADMIN |
 | Usuario Demo      | usuario@bookstore.com     | User1234!    | USER  |
+
+---
+
+## Flujo de pago con PayPal Sandbox (tarjeta simulada)
+
+El checkout ahora soporta **dos opciones visibles en carrito**:
+
+1. **Checkout (mock payment)**: flujo interno de respaldo.
+2. **Pay with PayPal (sandbox)**: redirección real a PayPal Sandbox y retorno a la app.
+
+### Variables de entorno relevantes
+
+- `PAYPAL_ENABLED` (`true|false`)
+- `PAYPAL_CLIENT_ID`
+- `PAYPAL_CLIENT_SECRET`
+- `PAYPAL_BASE_URL` (por defecto: `https://api-m.sandbox.paypal.com`)
+- `FRONTEND_URL` (para links en email transaccional)
+
+### Comportamiento por entorno
+
+- Si `PAYPAL_ENABLED=true` y la configuración es válida, se habilita el botón de PayPal Sandbox.
+- Si `PAYPAL_ENABLED=false`, el flujo mock permanece activo y la UI muestra mensaje explícito indicando que PayPal está deshabilitado.
+- Si `PAYPAL_ENABLED=true` pero faltan credenciales, la UI muestra mensaje de configuración inválida (sin fallback silencioso).
+
+### Endpoints del flujo PayPal
+
+- `GET /api/orders/paypal/public-config`
+- `POST /api/orders/paypal/create`
+- `POST /api/orders/paypal/capture`
+- `GET /api/orders/{orderId}`
+- `GET /api/reports/invoice/{orderId}`
+
+### Prueba local end-to-end
+
+1. Inicia sesión.
+2. Agrega libros al carrito.
+3. En carrito, usa **Pay with PayPal (sandbox)**.
+4. Completa pago de prueba en PayPal Sandbox.
+5. PayPal redirige a `/checkout/paypal-return`.
+6. Verifica resumen de transacción e invoice.
+7. Abre Mailpit (`http://localhost:8025`) y valida el correo transaccional de confirmación.
 | Usuario Demo 2    | juan.perez@email.com      | Juan1234!    | USER  |
 
 ### Registrar un usuario manualmente:

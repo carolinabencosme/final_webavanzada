@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
@@ -28,9 +28,9 @@ const mapPayPalReturnError = (error: unknown, t: (key: string) => string): PayPa
 export default function PayPalReturnPage() {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
   const qc = useQueryClient()
   const [err, setErr] = useState<PayPalReturnReadableError | null>(null)
+  const [completedOrder, setCompletedOrder] = useState<any>(null)
   const token = searchParams.get('token')
   const ran = useRef(false)
 
@@ -40,12 +40,12 @@ export default function PayPalReturnPage() {
       if (!user?.email || !token) throw new Error('missing')
       return capturePayPalOrder({ userEmail: user.email, paypalOrderId: token })
     },
-    onSuccess: () => {
+    onSuccess: (order) => {
+      setCompletedOrder(order)
       toast.success(t('cart.orderOk'))
       qc.invalidateQueries({ queryKey: ['cart'] })
       qc.invalidateQueries({ queryKey: ['orders'] })
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
-      navigate('/my-orders', { replace: true })
     },
     onError: (error) => {
       const readable = mapPayPalReturnError(error, t)
@@ -75,6 +75,37 @@ export default function PayPalReturnPage() {
             {t('cart.backToCart')}
           </Link>
         </>
+      ) : completedOrder ? (
+        <div className="text-left card p-6">
+          <h1 className="font-serif text-2xl text-ink mb-4">{t('cart.summaryTitle')}</h1>
+          <p className="text-sm text-ink-muted mb-1">
+            {t('cart.summaryOrder')} <strong>#{completedOrder.id}</strong>
+          </p>
+          <p className="text-sm text-ink-muted mb-1">
+            {t('cart.summaryStatus')} <strong>{completedOrder.status}</strong>
+          </p>
+          <p className="text-sm text-ink-muted mb-4">
+            {t('cart.summaryDate')} {completedOrder.createdAt ? new Date(completedOrder.createdAt).toLocaleString() : '—'}
+          </p>
+
+          <ul className="space-y-2 mb-4">
+            {(completedOrder.items ?? []).map((item: any, idx: number) => (
+              <li key={`${item.bookId}-${idx}`} className="text-sm text-ink">
+                {item.bookTitle} · {item.quantity} × ${Number(item.price ?? 0).toFixed(2)}
+              </li>
+            ))}
+          </ul>
+
+          <p className="font-serif text-xl text-primary-700 mb-6">${Number(completedOrder.total ?? 0).toFixed(2)}</p>
+          <div className="flex gap-3">
+            <Link to="/my-orders" className="btn-primary inline-block">
+              {t('cart.goToOrders')}
+            </Link>
+            <a className="btn-secondary inline-block" href={`/api/reports/invoice/${completedOrder.id}`} target="_blank" rel="noreferrer">
+              {t('cart.downloadInvoice')}
+            </a>
+          </div>
+        </div>
       ) : (
         <p className="text-ink-muted text-sm">{t('cart.paypalProcessing')}</p>
       )}

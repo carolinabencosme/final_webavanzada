@@ -44,21 +44,23 @@ public class OrderController {
     }
 
     @GetMapping({"/paypal/config", "/paypal/public-config"})
-    public ResponseEntity<ApiResponse<?>> getPublicPayPalConfig() {
-        if (isInvalidPayPalConfig()) {
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                .success(false)
-                .message("PayPal configuration is invalid. Verify clientId, clientSecret, and currency.")
-                .code("PAYPAL_CONFIG_INVALID")
-                .build());
+    public ResponseEntity<ApiResponse<PayPalPublicConfigDto>> getPublicPayPalConfig() {
+        boolean invalidConfig = isInvalidPayPalConfig();
+        boolean enabledForCheckout = payPalProperties.isEnabled() && !invalidConfig;
+        String availabilityMessage = null;
+        if (!payPalProperties.isEnabled()) {
+            availabilityMessage = "PayPal Sandbox is disabled by PAYPAL_ENABLED=false. Mock checkout remains available.";
+        } else if (invalidConfig) {
+            availabilityMessage = "PayPal Sandbox is enabled but misconfigured. Verify PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, and paypal.currency.";
         }
 
         PayPalPublicConfigDto dto = PayPalPublicConfigDto.builder()
-            .enabled(payPalProperties.isEnabled())
+            .enabled(enabledForCheckout)
             .clientId(hasText(payPalProperties.getClientId()) ? payPalProperties.getClientId() : null)
             .currency(payPalProperties.getCurrency())
             .baseUrlMode(resolveBaseUrlMode(payPalProperties.getBaseUrl()))
-            .provider("paypal")
+            .provider(enabledForCheckout ? "paypal" : "mock")
+            .availabilityMessage(availabilityMessage)
             .build();
 
         return ResponseEntity.ok(ApiResponse.success("OK", dto));
