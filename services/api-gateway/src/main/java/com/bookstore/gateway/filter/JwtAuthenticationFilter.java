@@ -75,6 +75,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         // But filter runs before routing, so check original path
         if (path.contains("/auth/login") || path.contains("/auth/register")) return true;
         if ("GET".equals(method) && (path.contains("/books") || path.contains("/genres"))) return true;
+        if ("GET".equals(method) && path.contains("/reports/invoice/public/")) return true;
         return false;
     }
 

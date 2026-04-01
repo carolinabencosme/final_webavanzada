@@ -25,6 +25,8 @@ spring:
             enable: ${MAIL_STARTTLS_ENABLE:false}
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  invoice-link-secret: ${INVOICE_LINK_SECRET:bookstore-invoice-secret-change-me}
+  invoice-link-ttl-seconds: ${INVOICE_LINK_TTL_SECONDS:604800}
 eureka:
   client:
     service-url:

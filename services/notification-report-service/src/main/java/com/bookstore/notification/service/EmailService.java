@@ -75,14 +75,14 @@ public class EmailService {
         }
     }
 
-    public void sendOrderConfirmationEmail(String to, String username, OrderCompletedEvent order, byte[] pdf) {
+    public void sendOrderConfirmationEmail(String to, String username, OrderCompletedEvent order, byte[] pdf, String invoiceToken) {
         try {
             MimeMessage msg = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
             helper.setTo(to);
             helper.setFrom("noreply@bookstore.com");
             helper.setSubject("Order confirmed — " + order.getOrderNumber());
-            helper.setText(buildOrderHtml(username, order), true);
+            helper.setText(buildOrderHtml(username, order, invoiceToken), true);
             helper.addAttachment("invoice-" + order.getOrderNumber() + ".pdf",
                 () -> new java.io.ByteArrayInputStream(pdf), "application/pdf");
             mailSender.send(msg);
@@ -92,10 +92,12 @@ public class EmailService {
         }
     }
 
-    private String buildOrderHtml(String username, OrderCompletedEvent order) {
+    private String buildOrderHtml(String username, OrderCompletedEvent order, String invoiceToken) {
         String base = frontendUrl == null ? "http://localhost:3000" : frontendUrl.replaceAll("/$", "");
         String ordersUrl = esc(base + "/my-orders");
-        String invoiceUrl = esc("http://localhost:8080/api/reports/invoice/" + (order.getOrderId() != null ? order.getOrderId() : ""));
+        String invoiceUrl = esc("http://localhost:8080/api/reports/invoice/public/" +
+            (order.getOrderId() != null ? order.getOrderId() : "") +
+            "?token=" + (invoiceToken != null ? invoiceToken : ""));
 
         String safeName = esc(username);
         String safeOrderNo = esc(order.getOrderNumber());

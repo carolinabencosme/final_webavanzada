@@ -25,6 +25,11 @@ public class InvoiceService {
 
     public byte[] generateInvoice(OrderCompletedEvent event) {
         try {
+            log.info("invoice_generate_requested orderId={} orderNumber={} items={} total={}",
+                event.getOrderId(),
+                event.getOrderNumber(),
+                event.getItems() == null ? 0 : event.getItems().size(),
+                event.getTotal());
             JasperReport report = getOrCompileReport();
             Map<String, Object> params = new HashMap<>();
             String inv = event.getOrderNumber() != null ? event.getOrderNumber() : "INV-" + event.getOrderId();
@@ -55,7 +60,7 @@ public class InvoiceService {
                 }
             }
             if (rows.isEmpty()) {
-                rows.add(new InvoiceLineRow("(no line items)", 0, "$0.00", "$0.00"));
+                throw new IllegalStateException("Invoice has no line items for orderId=" + event.getOrderId());
             }
 
             JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(rows);
