@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
-import { capturePayPalOrder, getOrderApiErrorCode } from '../api/orders'
+import { capturePayPalOrder, downloadInvoice, getOrderApiErrorCode } from '../api/orders'
 import { getUser } from '../store/authStore'
 
 type PayPalReturnReadableError = {
@@ -31,8 +31,33 @@ export default function PayPalReturnPage() {
   const qc = useQueryClient()
   const [err, setErr] = useState<PayPalReturnReadableError | null>(null)
   const [completedOrder, setCompletedOrder] = useState<any>(null)
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false)
   const token = searchParams.get('token')
   const ran = useRef(false)
+
+  const handleInvoiceDownload = async () => {
+    if (!completedOrder?.id || downloadingInvoice) return
+    try {
+      setDownloadingInvoice(true)
+      const response = await downloadInvoice(String(completedOrder.id))
+      const contentType = response.headers['content-type'] ?? 'application/pdf'
+      const blob = new Blob([response.data], { type: contentType })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      const disposition = response.headers['content-disposition'] as string | undefined
+      const fileNameMatch = disposition?.match(/filename="?([^"]+)"?/)
+      link.href = url
+      link.download = fileNameMatch?.[1] ?? `invoice-${completedOrder.id}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch {
+      toast.error(t('cart.unknown'))
+    } finally {
+      setDownloadingInvoice(false)
+    }
+  }
 
   const mut = useMutation({
     mutationFn: () => {
@@ -101,9 +126,9 @@ export default function PayPalReturnPage() {
             <Link to="/my-orders" className="btn-primary inline-block">
               {t('cart.goToOrders')}
             </Link>
-            <a className="btn-secondary inline-block" href={`/api/reports/invoice/${completedOrder.id}`} target="_blank" rel="noreferrer">
+            <button type="button" className="btn-secondary inline-block" onClick={handleInvoiceDownload} disabled={downloadingInvoice}>
               {t('cart.downloadInvoice')}
-            </a>
+            </button>
           </div>
         </div>
       ) : (
