@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: notification-report-service
+  config:
+    import: optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:8888
   data:
     mongodb:
       uri: mongodb://${MONGO_HOST:localhost}:27017/${MONGO_DB:notificationdb}

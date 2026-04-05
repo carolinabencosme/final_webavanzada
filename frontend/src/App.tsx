@@ -5,7 +5,7 @@ import HomePage from './pages/HomePage'
 import CatalogPage from './pages/CatalogPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
-import BookDetailPage from './pages/BookDetailPage'
+import PropertyDetailPage from './pages/PropertyDetailPage'
 import CartPage from './pages/CartPage'
 import OrdersPage from './pages/OrdersPage'
 import UnauthorizedPage from './pages/UnauthorizedPage'
@@ -14,12 +14,13 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import PayPalReturnPage from './pages/PayPalReturnPage'
+import ProfilePage from './pages/ProfilePage'
 import SiteFooter from './components/SiteFooter'
 import DocumentTitle from './components/DocumentTitle'
 
 function MainLayout() {
   return (
-    <div className="min-h-screen flex flex-col bg-paper">
+    <div className="min-h-screen flex flex-col bg-mesh-light">
       <DocumentTitle />
       <Navbar />
       <main className="flex-1">
@@ -37,7 +38,7 @@ export default function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/catalog" element={<CatalogPage />} />
-          <Route path="/books/:id" element={<BookDetailPage />} />
+          <Route path="/properties/:id" element={<PropertyDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
@@ -59,10 +60,18 @@ export default function App() {
             }
           />
           <Route
-            path="/my-orders"
+            path="/mis-reservas"
             element={
               <ProtectedRoute>
                 <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/perfil"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />
@@ -77,7 +86,7 @@ export default function App() {
           >
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsersPage />} />
-            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="reservations" element={<AdminOrdersPage />} />
           </Route>
         </Route>
       </Routes>

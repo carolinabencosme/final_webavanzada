@@ -32,14 +32,19 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[calc(100vh-12rem)] flex">
-      <div className="hidden lg:flex lg:w-2/5 bg-ink text-paper p-12 flex-col justify-between">
-        <div>
-          <p className="section-label text-gold-light mb-4">{t('auth.loginAsideLabel')}</p>
-          <h2 className="font-serif text-3xl leading-snug font-medium">
-            {t('auth.loginAsideBody', { university: t('brand.university') })}
-          </h2>
+      <div className="hidden lg:flex lg:w-2/5 bg-mesh-hero text-white p-12 flex-col justify-between relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-20 pointer-events-none bg-cover bg-center"
+          style={{
+            backgroundImage:
+              'url(https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1000&q=80&auto=format&fit=crop)',
+          }}
+        />
+        <div className="relative z-10">
+          <p className="text-primary-100 text-[11px] font-bold uppercase tracking-[0.22em] mb-4">{t('auth.loginAsideLabel')}</p>
+          <h2 className="font-serif text-3xl leading-snug font-medium">{t('auth.loginAsideBody')}</h2>
         </div>
-        <p className="text-sm text-paper/45 leading-relaxed max-w-sm">{t('auth.loginAsideFoot')}</p>
+        <p className="relative z-10 text-sm text-white/70 leading-relaxed max-w-sm">{t('auth.loginAsideFoot')}</p>
       </div>
       <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-paper">
         <div className="w-full max-w-md">
@@ -83,7 +88,7 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <div className="mt-6 p-4 bg-paper-deep border border-ink/8 rounded-lg text-sm text-ink-muted">
+          <div className="mt-6 p-4 bg-primary-50/80 border border-primary-100 rounded-2xl text-sm text-ink-muted">
             <p className="font-semibold text-ink mb-2">{t('login.demoTitle')}</p>
             <p>{t('login.demoAdmin')}</p>
             <p>{t('login.demoClient')}</p>

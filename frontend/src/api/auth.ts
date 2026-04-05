@@ -8,6 +8,16 @@ export const register = (username: string, email: string, password: string) =>
 
 export const getMe = () => api.get('/auth/me').then(r => r.data.data)
 
+export interface UpdateProfileBody {
+  username?: string
+  email?: string
+  currentPassword?: string
+  newPassword?: string
+}
+
+export const updateProfile = (data: UpdateProfileBody) =>
+  api.put('/users/me', data).then(r => r.data.data)
+
 export const getUsers = () => api.get('/users').then(r => r.data.data)
 
 export const updateUser = (id: string, data: unknown) =>

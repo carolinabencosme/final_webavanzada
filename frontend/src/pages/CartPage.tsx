@@ -2,16 +2,16 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Trash2, ShoppingBag } from 'lucide-react'
+import { Trash2, ShoppingBag, Calendar } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { getCart, removeCartItem, updateCartItem, clearCart } from '../api/cart'
+import { getCart, removeCartItem, clearCart } from '../api/cart'
 import {
   checkout,
   createPayPalOrder,
-  getOrderApiErrorCode,
-  getOrderApiErrorMessage,
+  getReservationApiErrorCode,
+  getReservationApiErrorMessage,
   getPayPalPublicConfig,
-} from '../api/orders'
+} from '../api/reservations'
 import { getUser } from '../store/authStore'
 
 type PayPalReadableError = {
@@ -31,7 +31,7 @@ const mapPayPalError = (error: unknown, t: (key: string) => string): PayPalReada
     PAYPAL_CAPTURE_FAILED: { message: t('cart.paypalCaptureErrDetailed') },
   }
 
-  const backendCode = getOrderApiErrorCode(error)
+  const backendCode = getReservationApiErrorCode(error)
   if (backendCode && backendErrorMap[backendCode]) return backendErrorMap[backendCode]
 
   const msg = error instanceof Error ? error.message : String(error)
@@ -70,12 +70,12 @@ export default function CartPage() {
     onSuccess: () => {
       toast.success(t('cart.orderOk'))
       qc.invalidateQueries({ queryKey: ['cart'] })
-      qc.invalidateQueries({ queryKey: ['orders'] })
+      qc.invalidateQueries({ queryKey: ['reservations'] })
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
     },
     onError: (error) =>
       toast.error(
-        getOrderApiErrorMessage(error, t('cart.orderErr'), {
+        getReservationApiErrorMessage(error, t('cart.orderErr'), {
           PAYPAL_TOKEN_FAILED: t('cart.paypalTokenErr'),
           PAYPAL_CREATE_ORDER_FAILED: t('cart.paypalCreateOrderErr'),
           PAYPAL_CAPTURE_FAILED: t('cart.paypalCaptureErrDetailed'),
@@ -105,7 +105,7 @@ export default function CartPage() {
     },
   })
 
-  const items = data?.items ?? []
+  const items = Array.isArray(data) ? data : []
 
   if (isLoading) {
     return <div className="max-w-3xl mx-auto px-4 py-20 text-ink-muted text-sm">{t('cart.loading')}</div>
@@ -131,28 +131,50 @@ export default function CartPage() {
         ) : (
           <div className="space-y-4">
             {items.map(
-              (item: { id: number; bookTitle: string; bookAuthor: string; quantity: number; price: unknown }) => (
-                <div key={item.id} className="card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-serif text-lg font-semibold text-ink">{item.bookTitle}</h3>
-                    <p className="text-sm text-ink-muted">{item.bookAuthor}</p>
-                    <p className="text-primary-700 font-semibold mt-2 font-serif text-lg">
-                      ${Number(item.price).toFixed(2)} × {item.quantity}
-                    </p>
+              (item: {
+                id: number
+                propertyName: string
+                city?: string
+                checkIn?: string
+                checkOut?: string
+                nights?: number
+                guests?: number
+                pricePerNight?: unknown
+                lineTotal?: unknown
+              }) => (
+                <div key={item.id} className="card p-6 flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-serif text-lg font-semibold text-ink">{item.propertyName}</h3>
+                      {item.city && <p className="text-sm text-ink-muted">{item.city}</p>}
+                      <div className="mt-3 flex flex-wrap gap-4 text-sm text-ink-muted">
+                        {item.checkIn && item.checkOut && (
+                          <span className="inline-flex items-center gap-1.5">
+                            <Calendar className="w-4 h-4" strokeWidth={1.5} />
+                            {item.checkIn} → {item.checkOut}
+                          </span>
+                        )}
+                        {item.nights != null && (
+                          <span>
+                            {item.nights} {t('cart.nights')}
+                          </span>
+                        )}
+                        {item.guests != null && (
+                          <span>
+                            {item.guests} {t('cart.guests')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-ink-muted uppercase tracking-wider">{t('cart.lineTotal')}</p>
+                      <p className="text-primary-700 font-semibold font-serif text-2xl">${Number(item.lineTotal ?? 0).toFixed(2)}</p>
+                      <p className="text-xs text-ink-muted mt-1">
+                        ${Number(item.pricePerNight ?? 0).toFixed(2)} / {t('cart.night')}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="number"
-                      min={1}
-                      className="input w-20 py-2 text-center"
-                      value={item.quantity}
-                      onChange={(e) => {
-                        const q = parseInt(e.target.value, 10)
-                        if (q >= 1) {
-                          updateCartItem(item.id, q).then(() => qc.invalidateQueries({ queryKey: ['cart'] }))
-                        }
-                      }}
-                    />
+                  <div className="flex justify-end">
                     <button
                       type="button"
                       className="p-2 text-ink-muted hover:text-red-700 transition-colors"

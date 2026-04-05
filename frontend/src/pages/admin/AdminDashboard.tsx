@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { getAdminStats } from '../../api/orders'
+import { getAdminStats } from '../../api/reservations'
 
 export default function AdminDashboard() {
   const { t } = useTranslation()
@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   })
 
   const chartData =
-    stats?.last7DaysPaid?.map((row) => ({
+    stats?.last7DaysConfirmed?.map((row) => ({
       day: row.date.slice(5),
       total: Number(row.total ?? 0),
     })) ?? []
@@ -29,8 +29,8 @@ export default function AdminDashboard() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-10">
-        <div className="w-12 h-12 rounded-lg bg-ink flex items-center justify-center">
-          <LayoutDashboard className="w-6 h-6 text-gold-light" strokeWidth={1.25} />
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center shadow-lg shadow-primary-600/25">
+          <LayoutDashboard className="w-6 h-6 text-white" strokeWidth={1.25} />
         </div>
         <div>
           <h1 className="font-serif text-3xl text-ink font-semibold">{t('admin.dashboardTitle')}</h1>
@@ -43,21 +43,34 @@ export default function AdminDashboard() {
 
       {stats && !isLoading && (
         <>
-          <div className="grid sm:grid-cols-3 gap-4 mb-10">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <div className="card p-6 border-ink/10">
+              <p className="section-label mb-1">{t('admin.statsToday')}</p>
+              <p className="font-serif text-3xl text-ink font-semibold">{stats.reservationsTodayCount}</p>
+              <p className="text-xs text-ink-muted mt-2">{t('admin.statsTodayHint')}</p>
+            </div>
             <div className="card p-6 border-ink/10">
               <p className="section-label mb-1">{t('admin.statsPending')}</p>
-              <p className="font-serif text-3xl text-ink font-semibold">{stats.pendingCount}</p>
+              <p className="font-serif text-3xl text-ink font-semibold">{stats.pendingPaymentCount}</p>
               <p className="text-xs text-ink-muted mt-2">{t('admin.statsPendingHint')}</p>
             </div>
             <div className="card p-6 border-ink/10">
-              <p className="section-label mb-1">{t('admin.statsPaidToday')}</p>
-              <p className="font-serif text-3xl text-ink font-semibold">{stats.paidTodayCount}</p>
-              <p className="text-xs text-ink-muted mt-2">{t('admin.statsPaidTodayHint')}</p>
+              <p className="section-label mb-1">{t('admin.statsConfirmedToday')}</p>
+              <p className="font-serif text-3xl text-ink font-semibold">{stats.confirmedTodayCount}</p>
+              <p className="text-xs text-ink-muted mt-2">{t('admin.statsConfirmedTodayHint')}</p>
             </div>
+            <div className="card p-6 border-ink/10">
+              <p className="section-label mb-1">{t('admin.statsCancelledToday')}</p>
+              <p className="font-serif text-3xl text-ink font-semibold">{stats.cancelledTodayCount}</p>
+              <p className="text-xs text-ink-muted mt-2">{t('admin.statsCancelledTodayHint')}</p>
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-1 gap-4 mb-10">
             <div className="card p-6 border-ink/10">
               <p className="section-label mb-1">{t('admin.statsRevenueToday')}</p>
               <p className="font-serif text-3xl text-primary-700 font-semibold">
-                ${Number(stats.paidTodayTotal ?? 0).toFixed(2)}
+                ${Number(stats.confirmedTodayTotal ?? 0).toFixed(2)}
               </p>
               <p className="text-xs text-ink-muted mt-2">{t('admin.statsRevenueTodayHint')}</p>
             </div>
@@ -88,9 +101,9 @@ export default function AdminDashboard() {
           <h2 className="font-serif text-xl text-ink font-semibold group-hover:text-primary-700">{t('admin.users')}</h2>
           <p className="prose-editorial text-sm mt-2">{t('admin.usersDesc')}</p>
         </Link>
-        <Link to="/admin/orders" className="card p-8 hover:border-primary-200/40 transition-colors group">
-          <h2 className="font-serif text-xl text-ink font-semibold group-hover:text-primary-700">{t('admin.orders')}</h2>
-          <p className="prose-editorial text-sm mt-2">{t('admin.ordersDesc')}</p>
+        <Link to="/admin/reservations" className="card p-8 hover:border-primary-200/40 transition-colors group">
+          <h2 className="font-serif text-xl text-ink font-semibold group-hover:text-primary-700">{t('admin.reservations')}</h2>
+          <p className="prose-editorial text-sm mt-2">{t('admin.reservationsDesc')}</p>
         </Link>
       </div>
     </div>

@@ -8,19 +8,31 @@ export interface AuthUser {
 
 export const getUser = (): AuthUser | null => {
   try {
-    const u = localStorage.getItem('bookstore_user')
-    return u ? JSON.parse(u) : null
-  } catch { return null }
+    let raw = localStorage.getItem('luma_user')
+    if (!raw) {
+      raw = localStorage.getItem('bookstore_user')
+      const oldTok = localStorage.getItem('bookstore_token')
+      if (raw && oldTok) {
+        localStorage.setItem('luma_user', raw)
+        localStorage.setItem('luma_token', oldTok)
+        localStorage.removeItem('bookstore_user')
+        localStorage.removeItem('bookstore_token')
+      }
+    }
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
 }
 
 export const setUser = (user: AuthUser) => {
-  localStorage.setItem('bookstore_token', user.token)
-  localStorage.setItem('bookstore_user', JSON.stringify(user))
+  localStorage.setItem('luma_token', user.token)
+  localStorage.setItem('luma_user', JSON.stringify(user))
 }
 
 export const clearUser = () => {
-  localStorage.removeItem('bookstore_token')
-  localStorage.removeItem('bookstore_user')
+  localStorage.removeItem('luma_token')
+  localStorage.removeItem('luma_user')
 }
 
 export const isAdmin = () => getUser()?.role === 'ADMIN'

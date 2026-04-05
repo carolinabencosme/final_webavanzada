@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { ShoppingCart, Menu, X } from 'lucide-react'
+import { ShoppingCart, Menu, X, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { clearUser, getUser } from '../store/authStore'
@@ -13,19 +13,19 @@ export default function Navbar() {
   const user = getUser()
   const [open, setOpen] = useState(false)
   const { data: cart } = useQuery({ queryKey: ['cart'], queryFn: getCart, enabled: !!user })
-  const cartCount = cart?.items?.length || 0
+  const cartCount = Array.isArray(cart) ? cart.length : 0
 
   const logout = () => {
     clearUser()
     navigate('/')
   }
 
-  const linkClass = 'text-sm font-medium text-ink/80 hover:text-ink transition-colors'
+  const linkClass = 'text-sm font-semibold text-stone-600 hover:text-primary-700 transition-colors'
 
   return (
-    <header className="sticky top-0 z-50 bg-paper/95 backdrop-blur-md border-b border-ink/8">
-      <div className="border-b border-ink/5 bg-ink/[0.03]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex justify-between items-center text-[11px] uppercase tracking-[0.12em] text-ink-muted gap-4">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-stone-200/80 shadow-sm shadow-stone-900/5">
+      <div className="border-b border-stone-100 bg-gradient-to-r from-primary-50/50 via-white to-amber-50/40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex justify-between items-center text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-800/80 gap-4">
           <span className="hidden sm:inline truncate">{t('brand.topBar')}</span>
           <div className="flex items-center gap-4 sm:gap-6 ml-auto shrink-0">
             <LanguageSwitcher />
@@ -47,12 +47,17 @@ export default function Navbar() {
 
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-[4.25rem]">
-          <Link to="/" className="group flex flex-col items-start gap-0.5 min-w-0">
-            <span className="font-serif text-2xl sm:text-[1.65rem] text-ink tracking-tight leading-none group-hover:text-primary-700 transition-colors truncate max-w-[85vw] sm:max-w-none">
-              {t('brand.name')}
+          <Link to="/" className="group flex items-center gap-3 min-w-0">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md shadow-primary-600/30 group-hover:shadow-lg transition-shadow">
+              <Sparkles className="w-5 h-5" strokeWidth={2} />
             </span>
-            <span className="text-[10px] uppercase tracking-[0.18em] text-gold font-medium max-w-[16rem] sm:max-w-none leading-tight">
-              {t('brand.subtitle')}
+            <span className="flex flex-col items-start gap-0 min-w-0">
+              <span className="font-serif text-2xl sm:text-[1.65rem] text-ink tracking-tight leading-none group-hover:text-primary-700 transition-colors truncate max-w-[85vw] sm:max-w-none">
+                {t('brand.name')}
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-600/90 max-w-[16rem] sm:max-w-none leading-tight truncate">
+                {t('brand.subtitle')}
+              </span>
             </span>
           </Link>
 
@@ -64,8 +69,13 @@ export default function Navbar() {
               {t('nav.catalog')}
             </Link>
             {user && (
-              <Link to="/my-orders" className={linkClass}>
+              <Link to="/mis-reservas" className={linkClass}>
                 {t('nav.orders')}
+              </Link>
+            )}
+            {user && (
+              <Link to="/perfil" className={linkClass}>
+                {t('nav.profile')}
               </Link>
             )}
             {user?.role === 'ADMIN' && (
@@ -128,8 +138,11 @@ export default function Navbar() {
                 <Link to="/cart" className="block py-2.5 text-ink font-medium" onClick={() => setOpen(false)}>
                   {t('nav.cart')} {cartCount > 0 ? `(${cartCount})` : ''}
                 </Link>
-                <Link to="/my-orders" className="block py-2.5 text-ink font-medium" onClick={() => setOpen(false)}>
+                <Link to="/mis-reservas" className="block py-2.5 text-ink font-medium" onClick={() => setOpen(false)}>
                   {t('nav.orders')}
+                </Link>
+                <Link to="/perfil" className="block py-2.5 text-ink font-medium" onClick={() => setOpen(false)}>
+                  {t('nav.profile')}
                 </Link>
               </>
             )}

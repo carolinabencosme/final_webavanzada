@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: catalog-service
+  config:
+    import: optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:8888
   data:
     mongodb:
       uri: mongodb://${MONGO_HOST:localhost}:27017/${MONGO_DB:catalogdb}
@@ -13,6 +15,12 @@ eureka:
   instance:
     prefer-ip-address: true
 management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
   endpoints:
     web:
       exposure:

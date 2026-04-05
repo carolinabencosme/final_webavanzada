@@ -4,8 +4,22 @@ server:
 spring:
   application:
     name: api-gateway
+  config:
+    import: optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:8888
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
   cloud:
     gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            # Tokens/seg por IP (ajustable con RATE_LIMIT_REPLENISH / RATE_LIMIT_BURST vía env en el contenedor)
+            redis-rate-limiter.replenishRate: 30
+            redis-rate-limiter.burstCapacity: 60
+            key-resolver: "#{@ipKeyResolver}"
       globalcors:
         cors-configurations:
           '[/**]':
@@ -23,13 +37,13 @@ spring:
         - id: catalog-service
           uri: lb://catalog-service
           predicates:
-            - Path=/api/books,/api/books/**,/api/genres,/api/genres/**
+            - Path=/api/properties,/api/properties/**
           filters:
             - StripPrefix=1
-        - id: cart-order-service
-          uri: lb://cart-order-service
+        - id: reservation-service
+          uri: lb://reservation-service
           predicates:
-            - Path=/api/cart/**,/api/orders/**,/api/checkout/**,/api/payments/**
+            - Path=/api/cart/**,/api/reservations/**,/api/checkout/**,/api/payments/**
           filters:
             - StripPrefix=1
         - id: review-service

@@ -1,11 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { getAllOrdersAdmin } from '../../api/orders'
+import { getAllReservationsAdmin } from '../../api/reservations'
 
 export default function AdminOrdersPage() {
   const { t } = useTranslation()
-  const { data: orders, isLoading } = useQuery({ queryKey: ['orders', 'admin'], queryFn: getAllOrdersAdmin })
-  const list = Array.isArray(orders) ? orders : []
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ['reservations', 'admin'],
+    queryFn: getAllReservationsAdmin,
+  })
+  const list = Array.isArray(rows) ? rows : []
 
   return (
     <div>
@@ -24,19 +27,25 @@ export default function AdminOrdersPage() {
               userEmail?: string
               total?: unknown
               status?: string
+              propertyName?: string
+              city?: string
+              checkIn?: string
+              checkOut?: string
             }) => (
               <li key={o.id} className="card px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <span className="font-mono text-sm text-ink">#{o.id}</span>
-                  {o.userEmail && (
-                    <span className="block text-xs text-ink-muted mt-0.5">{o.userEmail}</span>
+                  {o.propertyName && <span className="block text-sm font-medium text-ink mt-0.5">{o.propertyName}</span>}
+                  {o.userEmail && <span className="block text-xs text-ink-muted mt-0.5">{o.userEmail}</span>}
+                  {(o.checkIn || o.checkOut) && (
+                    <span className="block text-xs text-ink-muted mt-1">
+                      {o.checkIn} → {o.checkOut}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-ink-muted">{o.status}</span>
-                  <span className="font-serif font-semibold text-primary-700">
-                    ${Number(o.total ?? 0).toFixed(2)}
-                  </span>
+                  <span className="font-serif font-semibold text-primary-700">${Number(o.total ?? 0).toFixed(2)}</span>
                 </div>
               </li>
             )
