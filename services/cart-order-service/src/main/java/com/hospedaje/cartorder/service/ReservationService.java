@@ -349,6 +349,8 @@ public class ReservationService {
             ReservationStatus.CONFIRMED, startOfToday, endOfToday);
         long cancelledToday = reservationRepository.countByStatusAndCreatedAtBetween(
             ReservationStatus.CANCELLED, startOfToday, endOfToday);
+        long completedToday = reservationRepository.countByStatusAndUpdatedAtBetween(
+            ReservationStatus.COMPLETED, startOfToday, endOfToday);
         BigDecimal confirmedTotal = reservationRepository.sumConfirmedTotalBetween(startOfToday, endOfToday);
         if (confirmedTotal == null) {
             confirmedTotal = BigDecimal.ZERO;
@@ -368,6 +370,7 @@ public class ReservationService {
             .pendingPaymentCount(pending)
             .confirmedTodayCount(confirmedToday)
             .cancelledTodayCount(cancelledToday)
+            .completedTodayCount(completedToday)
             .confirmedTodayTotal(confirmedTotal)
             .last7DaysConfirmed(last7)
             .build();

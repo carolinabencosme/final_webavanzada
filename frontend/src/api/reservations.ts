@@ -33,6 +33,7 @@ export interface ReservationStats {
   pendingPaymentCount: number
   confirmedTodayCount: number
   cancelledTodayCount: number
+  completedTodayCount: number
   confirmedTodayTotal: number
   last7DaysConfirmed: { date: string; total: number }[]
 }

@@ -43,7 +43,7 @@ export default function AdminDashboard() {
 
       {stats && !isLoading && (
         <>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-10">
             <div className="card p-6 border-ink/10">
               <p className="section-label mb-1">{t('admin.statsToday')}</p>
               <p className="font-serif text-3xl text-ink font-semibold">{stats.reservationsTodayCount}</p>
@@ -58,6 +58,11 @@ export default function AdminDashboard() {
               <p className="section-label mb-1">{t('admin.statsConfirmedToday')}</p>
               <p className="font-serif text-3xl text-ink font-semibold">{stats.confirmedTodayCount}</p>
               <p className="text-xs text-ink-muted mt-2">{t('admin.statsConfirmedTodayHint')}</p>
+            </div>
+            <div className="card p-6 border-ink/10">
+              <p className="section-label mb-1">{t('admin.statsCompletedToday')}</p>
+              <p className="font-serif text-3xl text-ink font-semibold">{stats.completedTodayCount}</p>
+              <p className="text-xs text-ink-muted mt-2">{t('admin.statsCompletedTodayHint')}</p>
             </div>
             <div className="card p-6 border-ink/10">
               <p className="section-label mb-1">{t('admin.statsCancelledToday')}</p>

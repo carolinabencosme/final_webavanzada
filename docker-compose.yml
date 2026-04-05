@@ -428,6 +428,39 @@ services:
     networks:
       - hospedaje-network
 
+  notification-report-service-2:
+    build:
+      <<: *java-build
+      args:
+        MODULE: notification-report-service
+    container_name: hospedaje-notification-2
+    ports:
+      - "8185:8085"
+    environment:
+      <<: [*java-tracing, *config-client]
+      MONGO_HOST: mongodb
+      MONGO_DB: notificationdb
+      RABBITMQ_HOST: rabbitmq
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      MAIL_SMTP_AUTH: "false"
+      MAIL_STARTTLS_ENABLE: "false"
+      EUREKA_HOST: discovery-service
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      config-service:
+        condition: service_started
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - hospedaje-network
+
   # ── Frontend ──────────────────────────────────────────────────────────────────
   frontend:
     build: ./frontend

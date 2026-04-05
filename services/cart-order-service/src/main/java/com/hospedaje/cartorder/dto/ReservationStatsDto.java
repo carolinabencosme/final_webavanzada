@@ -21,6 +21,8 @@ public class ReservationStatsDto {
     private long confirmedTodayCount;
     /** Cancelled today */
     private long cancelledTodayCount;
+    /** Moved to COMPLETED today (checkout processed / status update today) */
+    private long completedTodayCount;
     /** Revenue from confirmed reservations today */
     private BigDecimal confirmedTodayTotal;
     /** Last 7 days confirmed revenue */

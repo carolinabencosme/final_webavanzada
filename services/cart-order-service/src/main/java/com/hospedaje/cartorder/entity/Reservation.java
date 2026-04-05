@@ -46,10 +46,27 @@ public class Reservation {
 
     private LocalDateTime createdAt;
 
+    /** Last persistence time; used for admin stats (e.g. stays marked COMPLETED today). */
+    private LocalDateTime updatedAt;
+
     private String paymentId;
     private String paypalOrderId;
     private String paypalCaptureId;
     private String paypalCaptureStatus;
     private String payerId;
     private String transactionRef;
+
+    @PrePersist
+    void onPersist() {
+        LocalDateTime n = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = n;
+        }
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

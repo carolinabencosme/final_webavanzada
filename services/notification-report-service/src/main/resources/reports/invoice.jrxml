@@ -11,34 +11,58 @@
     <parameter name="SUBTOTAL" class="java.lang.String"/>
     <parameter name="TAX" class="java.lang.String"/>
     <parameter name="TOTAL" class="java.lang.String"/>
+    <parameter name="PROPERTY_NAME" class="java.lang.String"/>
+    <parameter name="CITY" class="java.lang.String"/>
+    <parameter name="CHECK_IN" class="java.lang.String"/>
+    <parameter name="CHECK_OUT" class="java.lang.String"/>
     <queryString><![CDATA[]]></queryString>
     <field name="bookTitle" class="java.lang.String"/>
     <field name="quantity" class="java.lang.Integer"/>
     <field name="unitPrice" class="java.lang.String"/>
     <field name="lineTotal" class="java.lang.String"/>
     <title>
-        <band height="90">
+        <band height="132">
             <staticText>
-                <reportElement x="0" y="10" width="555" height="24" uuid="b2c3d4e5-0001-4000-8000-0000000000a1"/>
+                <reportElement x="0" y="8" width="555" height="24" uuid="b2c3d4e5-0001-4000-8000-0000000000a1"/>
                 <textElement textAlignment="Center">
                     <font size="16" isBold="true"/>
                 </textElement>
-                <text><![CDATA[StayHub — Factura de reserva]]></text>
+                <text><![CDATA[Luma — Factura de reserva]]></text>
             </staticText>
             <textField>
-                <reportElement x="0" y="40" width="280" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a2"/>
+                <reportElement x="0" y="36" width="280" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a2"/>
                 <textElement/>
-                <textFieldExpression><![CDATA["Invoice #: " + $P{ORDER_NUMBER}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Factura #: " + $P{ORDER_NUMBER}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="280" y="40" width="275" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a3"/>
+                <reportElement x="280" y="36" width="275" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a3"/>
                 <textElement textAlignment="Right"/>
-                <textFieldExpression><![CDATA["Date: " + $P{ORDER_DATE}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Fecha: " + $P{ORDER_DATE}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="0" y="58" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a4"/>
+                <reportElement x="0" y="54" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a4"/>
                 <textElement/>
-                <textFieldExpression><![CDATA["Customer: " + $P{CUSTOMER_EMAIL}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Cliente: " + $P{CUSTOMER_EMAIL}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="72" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a5"/>
+                <textElement/>
+                <textFieldExpression><![CDATA["Propiedad: " + $P{PROPERTY_NAME}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="90" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a6"/>
+                <textElement/>
+                <textFieldExpression><![CDATA["Ciudad: " + $P{CITY}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="108" width="270" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a7"/>
+                <textElement/>
+                <textFieldExpression><![CDATA["Entrada: " + $P{CHECK_IN}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="285" y="108" width="270" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a8"/>
+                <textElement/>
+                <textFieldExpression><![CDATA["Salida: " + $P{CHECK_OUT}]]></textFieldExpression>
             </textField>
         </band>
     </title>

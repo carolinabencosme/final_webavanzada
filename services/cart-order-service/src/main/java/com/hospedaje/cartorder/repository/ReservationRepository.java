@@ -3,6 +3,7 @@ package com.hospedaje.cartorder.repository;
 import com.hospedaje.cartorder.entity.Reservation;
 import com.hospedaje.cartorder.entity.ReservationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -60,4 +61,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.createdAt >= :start AND r.createdAt < :end")
     long countCreatedBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.status = :status AND r.updatedAt >= :start AND r.updatedAt < :end")
+    long countByStatusAndUpdatedAtBetween(
+        @Param("status") ReservationStatus status,
+        @Param("start") LocalDateTime start,
+        @Param("end") LocalDateTime end
+    );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Reservation r SET r.updatedAt = r.createdAt WHERE r.updatedAt IS NULL")
+    int backfillUpdatedAtWhereNull();
 }

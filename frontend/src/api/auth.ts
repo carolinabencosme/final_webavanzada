@@ -20,6 +20,18 @@ export const updateProfile = (data: UpdateProfileBody) =>
 
 export const getUsers = () => api.get('/users').then(r => r.data.data)
 
+export interface AdminCreateUserBody {
+  username: string
+  email: string
+  password: string
+  role?: 'CLIENT' | 'ADMIN'
+  active?: boolean
+  sendWelcomeEmail?: boolean
+}
+
+export const createUser = (data: AdminCreateUserBody) =>
+  api.post('/users', data).then(r => r.data.data)
+
 export const updateUser = (id: string, data: unknown) =>
   api.put(`/users/${id}`, data).then(r => r.data.data)
 

@@ -77,6 +77,33 @@ public class AuthService {
         return userRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    public UserDto createUserByAdmin(AdminCreateUserRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already in use");
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username already in use");
+        }
+        Role role = request.getRole() != null ? request.getRole() : Role.CLIENT;
+        boolean active = request.getActive() == null || request.getActive();
+        User user = User.builder()
+            .username(request.getUsername())
+            .email(request.getEmail())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .role(role)
+            .active(active)
+            .build();
+        user = userRepository.save(user);
+
+        boolean sendWelcome = request.getSendWelcomeEmail() == null || request.getSendWelcomeEmail();
+        if (sendWelcome) {
+            eventPublisher.publishUserRegistered(new UserRegisteredEvent(
+                user.getId().toString(), user.getEmail(), user.getUsername(), LocalDateTime.now()
+            ));
+        }
+        return toDto(user);
+    }
+
     public UserDto updateUser(UUID id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));

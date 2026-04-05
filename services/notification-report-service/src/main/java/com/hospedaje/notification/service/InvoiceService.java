@@ -44,6 +44,10 @@ public class InvoiceService {
             params.put("SUBTOTAL", "$" + subtotal.setScale(2, RoundingMode.HALF_UP));
             params.put("TAX", "$" + tax.setScale(2, RoundingMode.HALF_UP));
             params.put("TOTAL", "$" + total.setScale(2, RoundingMode.HALF_UP));
+            params.put("PROPERTY_NAME", nz(event.getPropertyName()));
+            params.put("CITY", nz(event.getCity()));
+            params.put("CHECK_IN", event.getCheckIn() != null ? event.getCheckIn().toString() : "");
+            params.put("CHECK_OUT", event.getCheckOut() != null ? event.getCheckOut().toString() : "");
 
             List<InvoiceLineRow> rows = new ArrayList<>();
             if (event.getItems() != null) {
@@ -88,6 +92,10 @@ public class InvoiceService {
             }
             return compiledReport;
         }
+    }
+
+    private static String nz(String s) {
+        return s != null ? s : "";
     }
 
     private static String truncate(String s, int max) {

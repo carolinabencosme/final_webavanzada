@@ -23,6 +23,12 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("Users retrieved", authService.getAllUsers()));
     }
 
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<UserDto>> create(@Valid @RequestBody AdminCreateUserRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("User created", authService.createUserByAdmin(request)));
+    }
+
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<UserDto>> updateMe(
         @RequestHeader("X-User-Id") String userId,
