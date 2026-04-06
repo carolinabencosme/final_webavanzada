@@ -29,3 +29,15 @@ Fecha de ejecución: 2026-04-06 (UTC)
 
 - Se revisó `application.yml`, `reservation-service.yml` (Config Server) y `docker-compose.yml`.
 - No se encontró `@DynamicInsert`, `hibernate.dynamic_insert`, ni perfiles activos (`SPRING_PROFILES_ACTIVE`) que omitan columnas no tocadas/nulas en esta ruta.
+
+## 6) Hardening de `quantity` vía migraciones y validación de arranque
+
+- Se incorporó Flyway en `cart-order-service` con la migración versionada `V1__cart_items_quantity_hardening.sql`.
+- La migración ejecuta hardening en `orderdb` sobre `cart_items.quantity`:
+  - `UPDATE ... SET quantity = 1 WHERE quantity IS NULL`.
+  - `ALTER COLUMN quantity SET DEFAULT 1`.
+  - `ALTER COLUMN quantity SET NOT NULL`.
+- Validación operativa en arranque:
+  - el servicio falla de forma explícita si no detecta aplicada la migración crítica `V1__cart_items_quantity_hardening.sql`;
+  - por lo tanto, antes de exponer `/cart/items`, deben aplicarse migraciones (`flyway_schema_history` debe registrar la versión `1`).
+- Se añadió prueba de integración con Testcontainers (PostgreSQL) para verificar persistencia de `CartItem` con `quantity` nunca nulo.
