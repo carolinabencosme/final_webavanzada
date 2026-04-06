@@ -90,6 +90,14 @@ public class CartService {
     }
 
     private CartItemDto toDto(CartItem i) {
+        int nights = 0;
+        if (i.getNights() != null && i.getNights() > 0) {
+            nights = i.getNights();
+        } else if (i.getCheckIn() != null && i.getCheckOut() != null) {
+            nights = (int) ChronoUnit.DAYS.between(i.getCheckIn(), i.getCheckOut());
+        }
+        int guests = (i.getGuests() != null && i.getGuests() > 0) ? i.getGuests() : 1;
+
         return CartItemDto.builder()
             .id(i.getId())
             .propertyId(i.getPropertyId())
@@ -98,8 +106,8 @@ public class CartService {
             .imageUrl(i.getImageUrl())
             .checkIn(i.getCheckIn())
             .checkOut(i.getCheckOut())
-            .guests(i.getGuests())
-            .nights(i.getNights())
+            .guests(guests)
+            .nights(nights)
             .pricePerNight(i.getPricePerNight())
             .lineTotal(i.getLineTotal())
             .build();
