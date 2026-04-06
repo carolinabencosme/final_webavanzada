@@ -9,7 +9,7 @@ COPY . .
 
 RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
 
-RUN mvn -q -pl "${MODULE}" -am package -DskipTests
+RUN mvn -U -B -pl "${MODULE}" -am package -Dmaven.test.skip=true
 
 FROM eclipse-temurin:17-jre-alpine
 ARG MODULE
