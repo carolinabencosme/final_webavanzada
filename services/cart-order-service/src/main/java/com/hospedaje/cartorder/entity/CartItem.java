@@ -32,6 +32,10 @@ public class CartItem {
 
     private LocalDate checkIn;
     private LocalDate checkOut;
+
+    @Column(nullable = false)
+    private Integer quantity;
+
     @Column(nullable = true)
     private Integer guests;
     @Column(nullable = true)
@@ -43,6 +47,9 @@ public class CartItem {
     @PrePersist
     @PreUpdate
     public void applySafeDefaults() {
+        if (quantity == null || quantity <= 0) {
+            quantity = 1;
+        }
         if ((nights == null || nights <= 0) && checkIn != null && checkOut != null) {
             long calculated = ChronoUnit.DAYS.between(checkIn, checkOut);
             if (calculated > 0) {
