@@ -33,8 +33,9 @@ public class CartItem {
     private LocalDate checkIn;
     private LocalDate checkOut;
 
+    @Builder.Default
     @Column(nullable = false)
-    private Integer quantity;
+    private Integer quantity = 1;
 
     @Column(nullable = true)
     private Integer guests;
