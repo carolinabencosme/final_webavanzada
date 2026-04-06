@@ -52,8 +52,10 @@ public class ReservationService {
         }
         CartItem ci = cartItems.get(0);
         assertAvailable(ci.getPropertyId(), ci.getCheckIn(), ci.getCheckOut());
+        int nights = resolveNights(ci);
+        int guests = resolveGuests(ci);
 
-        BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), ci.getNights());
+        BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), nights);
         String resolvedEmail = requireUserEmail(userEmail);
 
         Reservation r = Reservation.builder()
@@ -66,8 +68,8 @@ public class ReservationService {
             .imageUrl(ci.getImageUrl())
             .checkIn(ci.getCheckIn())
             .checkOut(ci.getCheckOut())
-            .nights(ci.getNights())
-            .guests(ci.getGuests())
+            .nights(nights)
+            .guests(guests)
             .pricePerNight(ci.getPricePerNight())
             .subtotal(amounts[0])
             .taxAmount(amounts[1])
@@ -90,8 +92,9 @@ public class ReservationService {
         }
         CartItem ci = cartItems.get(0);
         assertAvailable(ci.getPropertyId(), ci.getCheckIn(), ci.getCheckOut());
+        int nights = resolveNights(ci);
 
-        BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), ci.getNights());
+        BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), nights);
         String resolvedEmail = requireUserEmail(userEmail);
         log.info("payment_provider_selected flow=checkout provider={}", paymentProvider.providerName());
         String paymentId = paymentProvider.charge(resolvedEmail, amounts[2], req.getCardNumber(), req.getCardExpiry(), req.getCardCvc());
@@ -109,8 +112,9 @@ public class ReservationService {
             .forEach(reservationRepository::delete);
 
         assertAvailable(ci.getPropertyId(), ci.getCheckIn(), ci.getCheckOut());
+        int nights = resolveNights(ci);
 
-        BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), ci.getNights());
+        BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), nights);
         log.info("payment_provider_selected flow=paypal_create provider={}", paymentProvider.providerName());
         requirePayPalProvider("paypal_create");
         Map<String, String> paypal = paymentProvider.createOrder(amounts[2], req.getReturnUrl(), req.getCancelUrl());
@@ -125,8 +129,8 @@ public class ReservationService {
             .imageUrl(ci.getImageUrl())
             .checkIn(ci.getCheckIn())
             .checkOut(ci.getCheckOut())
-            .nights(ci.getNights())
-            .guests(ci.getGuests())
+            .nights(nights)
+            .guests(resolveGuests(ci))
             .pricePerNight(ci.getPricePerNight())
             .subtotal(amounts[0])
             .taxAmount(amounts[1])
@@ -186,8 +190,8 @@ public class ReservationService {
             .imageUrl(ci.getImageUrl())
             .checkIn(ci.getCheckIn())
             .checkOut(ci.getCheckOut())
-            .nights(ci.getNights())
-            .guests(ci.getGuests())
+            .nights(resolveNights(ci))
+            .guests(resolveGuests(ci))
             .pricePerNight(ci.getPricePerNight())
             .subtotal(amounts[0])
             .taxAmount(amounts[1])
@@ -326,6 +330,23 @@ public class ReservationService {
         BigDecimal tax = subtotal.multiply(TAX_RATE).setScale(2, RoundingMode.HALF_UP);
         BigDecimal total = subtotal.add(tax).setScale(2, RoundingMode.HALF_UP);
         return new BigDecimal[] { subtotal, tax, total };
+    }
+
+    private static int resolveNights(CartItem item) {
+        if (item.getNights() != null && item.getNights() > 0) {
+            return item.getNights();
+        }
+        if (item.getCheckIn() != null && item.getCheckOut() != null) {
+            long computed = ChronoUnit.DAYS.between(item.getCheckIn(), item.getCheckOut());
+            if (computed > 0) {
+                return (int) computed;
+            }
+        }
+        throw new RuntimeException("No se pudo resolver la cantidad de noches para el ítem del carrito");
+    }
+
+    private static int resolveGuests(CartItem item) {
+        return (item.getGuests() != null && item.getGuests() > 0) ? item.getGuests() : 1;
     }
 
     public List<ReservationDto> getUserReservations(String userId) {
