@@ -20,6 +20,7 @@ public class CartItemDto {
     private String imageUrl;
     private LocalDate checkIn;
     private LocalDate checkOut;
+    private int quantity;
     private int guests;
     private int nights;
     private BigDecimal pricePerNight;
