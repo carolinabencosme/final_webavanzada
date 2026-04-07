@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
-import { capturePayPalOrder, downloadInvoice, getReservationApiErrorCode } from '../api/reservations'
+import { capturePayPalOrder, downloadInvoiceWithRetry, getReservationApiErrorCode } from '../api/reservations'
 import { getUser } from '../store/authStore'
 
 type PayPalReturnReadableError = {
@@ -39,7 +39,7 @@ export default function PayPalReturnPage() {
     if (!completed?.id || downloadingInvoice) return
     try {
       setDownloadingInvoice(true)
-      const response = await downloadInvoice(String(completed.id))
+      const response = await downloadInvoiceWithRetry(String(completed.id), { retries: 6, delayMs: 1000 })
       const contentType = response.headers['content-type'] ?? 'application/pdf'
       const blob = new Blob([response.data], { type: contentType })
       const url = window.URL.createObjectURL(blob)
