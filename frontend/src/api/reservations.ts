@@ -1,5 +1,5 @@
 import api from '../lib/axios'
-import type { AxiosError } from 'axios'
+import type { AxiosError, AxiosResponse } from 'axios'
 
 export interface CheckoutBody {
   userEmail: string
@@ -98,3 +98,28 @@ export const getAdminStats = () =>
 
 export const downloadInvoice = (orderId: string) =>
   api.get(`/reports/invoice/${orderId}`, { responseType: 'blob' })
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export const downloadInvoiceWithRetry = async (
+  orderId: string,
+  options?: { retries?: number; delayMs?: number }
+): Promise<AxiosResponse<Blob>> => {
+  const retries = Math.max(0, options?.retries ?? 5)
+  const delayMs = Math.max(100, options?.delayMs ?? 1000)
+
+  let attempt = 0
+  // retry when invoice is still propagating (404) or report service temporarily unavailable via gateway (503)
+  // this prevents breaking UX right after a successful PayPal capture.
+  for (;;) {
+    try {
+      return await downloadInvoice(orderId)
+    } catch (error) {
+      const status = (error as AxiosError)?.response?.status
+      const shouldRetry = (status === 404 || status === 503) && attempt < retries
+      if (!shouldRetry) throw error
+      attempt += 1
+      await sleep(delayMs)
+    }
+  }
+}
