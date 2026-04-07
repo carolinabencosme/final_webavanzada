@@ -293,11 +293,12 @@ services:
       DB_PASSWORD: postgres
       RABBITMQ_HOST: rabbitmq
       EUREKA_HOST: discovery-service
-      PAYMENT_MOCK: "true"
+      PAYMENT_MOCK: ${PAYMENT_MOCK:-true}
       PAYPAL_ENABLED: ${PAYPAL_ENABLED:-false}
       PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
       PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
       PAYPAL_BASE_URL: ${PAYPAL_BASE_URL:-https://api-m.sandbox.paypal.com}
+      PAYPAL_HEALTH_ENABLED: ${PAYPAL_HEALTH_ENABLED:-false}
     depends_on:
       config-service:
         condition: service_started
@@ -326,11 +327,12 @@ services:
       DB_PASSWORD: postgres
       RABBITMQ_HOST: rabbitmq
       EUREKA_HOST: discovery-service
-      PAYMENT_MOCK: "true"
+      PAYMENT_MOCK: ${PAYMENT_MOCK:-true}
       PAYPAL_ENABLED: ${PAYPAL_ENABLED:-false}
       PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
       PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
       PAYPAL_BASE_URL: ${PAYPAL_BASE_URL:-https://api-m.sandbox.paypal.com}
+      PAYPAL_HEALTH_ENABLED: ${PAYPAL_HEALTH_ENABLED:-false}
     depends_on:
       config-service:
         condition: service_started

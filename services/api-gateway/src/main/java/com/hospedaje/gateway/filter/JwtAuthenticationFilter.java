@@ -77,6 +77,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         if ("GET".equals(method) && path.contains("/properties")) return true;
         if ("GET".equals(method) && path.contains("/reviews/property/")) return true;
         if ("GET".equals(method) && path.contains("/reservations/availability")) return true;
+        if ("GET".equals(method) && path.contains("/reservations/paypal/")) return true;
+        if ("GET".equals(method) && path.contains("/payments/paypal/health")) return true;
         if ("GET".equals(method) && path.contains("/reports/invoice/public/")) return true;
         return false;
     }
