@@ -1,5 +1,8 @@
 server:
   port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
 
 spring:
   application:
@@ -80,8 +83,3 @@ management:
     web:
       exposure:
         include: health,info
-
-server:
-  error:
-    include-message: always
-    include-binding-errors: always
