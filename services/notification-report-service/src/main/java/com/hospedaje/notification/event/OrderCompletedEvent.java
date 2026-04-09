@@ -1,5 +1,7 @@
 package com.hospedaje.notification.event;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +17,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class OrderCompletedEvent {
-    private String orderId;
-    private String orderNumber;
+    @JsonAlias("orderId")
+    private String reservationId;
+    @JsonAlias("orderNumber")
+    private String reservationNumber;
     private String userId;
     private String userEmail;
     private BigDecimal total;
@@ -34,9 +38,31 @@ public class OrderCompletedEvent {
     @AllArgsConstructor
     @Builder
     public static class OrderItemInfo {
-        private String bookId;
-        private String bookTitle;
+        @JsonAlias("bookId")
+        private String propertyId;
+        @JsonAlias("bookTitle")
+        private String propertyLabel;
         private int quantity;
         private BigDecimal price;
+
+        @JsonProperty("bookId")
+        public String getBookId() { return propertyId; }
+        @JsonProperty("bookId")
+        public void setBookId(String bookId) { this.propertyId = bookId; }
+
+        @JsonProperty("bookTitle")
+        public String getBookTitle() { return propertyLabel; }
+        @JsonProperty("bookTitle")
+        public void setBookTitle(String bookTitle) { this.propertyLabel = bookTitle; }
     }
+
+    @JsonProperty("orderId")
+    public String getOrderId() { return reservationId; }
+    @JsonProperty("orderId")
+    public void setOrderId(String orderId) { this.reservationId = orderId; }
+
+    @JsonProperty("orderNumber")
+    public String getOrderNumber() { return reservationNumber; }
+    @JsonProperty("orderNumber")
+    public void setOrderNumber(String orderNumber) { this.reservationNumber = orderNumber; }
 }

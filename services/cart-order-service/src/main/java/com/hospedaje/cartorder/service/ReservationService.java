@@ -234,8 +234,8 @@ public class ReservationService {
     private OrderCompletedEvent buildEvent(Reservation r) {
         String num = "RES-" + r.getId();
         return OrderCompletedEvent.builder()
-            .orderId(String.valueOf(r.getId()))
-            .orderNumber(num)
+            .reservationId(String.valueOf(r.getId()))
+            .reservationNumber(num)
             .userId(r.getUserId())
             .userEmail(r.getUserEmail())
             .total(r.getTotal())
@@ -246,8 +246,8 @@ public class ReservationService {
             .checkOut(r.getCheckOut())
             .nights(r.getNights())
             .items(List.of(OrderCompletedEvent.OrderItemInfo.builder()
-                .bookId(r.getPropertyId())
-                .bookTitle(r.getPropertyName() + " — " + r.getNights() + " noches")
+                .propertyId(r.getPropertyId())
+                .propertyLabel(r.getPropertyName() + " — " + r.getNights() + " noches")
                 .quantity(r.getNights())
                 .price(r.getPricePerNight())
                 .build()))
