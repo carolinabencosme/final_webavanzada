@@ -7,7 +7,6 @@ import com.hospedaje.cartorder.dto.CartItemDto;
 import com.hospedaje.cartorder.dto.PropertyDto;
 import com.hospedaje.cartorder.entity.CartItem;
 import com.hospedaje.cartorder.repository.CartItemRepository;
-import com.hospedaje.cartorder.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +23,7 @@ public class CartService {
 
     private final CartItemRepository cartItemRepository;
     private final CatalogClient catalogClient;
-    private final ReservationRepository reservationRepository;
+    private final RoomAvailabilityService roomAvailabilityService;
 
     public List<CartItemDto> getCart(String userId) {
         return cartItemRepository.findByUserId(userId).stream().map(this::toDto).collect(Collectors.toList());
@@ -46,7 +45,8 @@ public class CartService {
             throw new RuntimeException("Rango de fechas inválido");
         }
 
-        if (reservationRepository.countConflicting(req.getPropertyId(), req.getCheckIn(), req.getCheckOut()) > 0) {
+        String roomType = roomAvailabilityService.normalizeRoomType(p.getRoomType());
+        if (!roomAvailabilityService.isRoomTypeAvailable(req.getPropertyId(), roomType, req.getCheckIn(), req.getCheckOut())) {
             throw new RuntimeException("Las fechas no están disponibles para esta propiedad");
         }
 
@@ -59,6 +59,7 @@ public class CartService {
             .userId(userId)
             .propertyId(req.getPropertyId())
             .propertyName(p.getName())
+            .roomType(roomType)
             .city(p.getCity())
             .imageUrl(p.getImageUrl())
             .checkIn(req.getCheckIn())
@@ -103,6 +104,7 @@ public class CartService {
             .id(i.getId())
             .propertyId(i.getPropertyId())
             .propertyName(i.getPropertyName())
+            .roomType(i.getRoomType())
             .city(i.getCity())
             .imageUrl(i.getImageUrl())
             .checkIn(i.getCheckIn())

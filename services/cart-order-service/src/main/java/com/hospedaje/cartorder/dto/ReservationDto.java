@@ -21,6 +21,8 @@ public class ReservationDto {
     private String userEmail;
     private String propertyId;
     private String propertyName;
+    private String roomType;
+    private String roomUnitId;
     private String city;
     private String country;
     private String imageUrl;

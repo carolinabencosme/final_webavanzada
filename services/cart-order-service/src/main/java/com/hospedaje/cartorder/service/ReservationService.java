@@ -38,6 +38,7 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final CartItemRepository cartItemRepository;
+    private final RoomAvailabilityService roomAvailabilityService;
     private final PaymentProvider paymentProvider;
     private final RabbitTemplate rabbitTemplate;
 
@@ -51,7 +52,8 @@ public class ReservationService {
             throw new RuntimeException("Solo se permite una propiedad por reserva. Vacía el carrito e intenta de nuevo.");
         }
         CartItem ci = cartItems.get(0);
-        assertAvailable(ci.getPropertyId(), ci.getCheckIn(), ci.getCheckOut());
+        String roomType = roomAvailabilityService.normalizeRoomType(ci.getRoomType());
+        String roomUnitId = reserveRoomUnit(ci.getPropertyId(), roomType, ci.getCheckIn(), ci.getCheckOut(), null);
         int nights = resolveNights(ci);
         int guests = resolveGuests(ci);
 
@@ -63,6 +65,8 @@ public class ReservationService {
             .userEmail(resolvedEmail)
             .propertyId(ci.getPropertyId())
             .propertyName(ci.getPropertyName())
+            .roomType(roomType)
+            .roomUnitId(roomUnitId)
             .city(ci.getCity())
             .country(null)
             .imageUrl(ci.getImageUrl())
@@ -91,7 +95,6 @@ public class ReservationService {
             throw new RuntimeException("No hay ítems en la selección");
         }
         CartItem ci = cartItems.get(0);
-        assertAvailable(ci.getPropertyId(), ci.getCheckIn(), ci.getCheckOut());
         int nights = resolveNights(ci);
 
         BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), nights);
@@ -111,7 +114,8 @@ public class ReservationService {
         reservationRepository.findByUserIdAndStatus(userId, ReservationStatus.PENDING_PAYMENT)
             .forEach(reservationRepository::delete);
 
-        assertAvailable(ci.getPropertyId(), ci.getCheckIn(), ci.getCheckOut());
+        String roomType = roomAvailabilityService.normalizeRoomType(ci.getRoomType());
+        String roomUnitId = reserveRoomUnit(ci.getPropertyId(), roomType, ci.getCheckIn(), ci.getCheckOut(), null);
         int nights = resolveNights(ci);
 
         BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), nights);
@@ -125,6 +129,8 @@ public class ReservationService {
             .userEmail(requireUserEmail(userEmail))
             .propertyId(ci.getPropertyId())
             .propertyName(ci.getPropertyName())
+            .roomType(roomType)
+            .roomUnitId(roomUnitId)
             .city(ci.getCity())
             .imageUrl(ci.getImageUrl())
             .checkIn(ci.getCheckIn())
@@ -163,6 +169,11 @@ public class ReservationService {
         log.info("payment_provider_selected flow=paypal_capture provider={}", paymentProvider.providerName());
         requirePayPalProvider("paypal_capture");
         String captureId = paymentProvider.captureOrder(req.getPaypalOrderId());
+        if (r.getRoomUnitId() == null || r.getRoomUnitId().isBlank()) {
+            String roomType = roomAvailabilityService.normalizeRoomType(r.getRoomType());
+            r.setRoomType(roomType);
+            r.setRoomUnitId(reserveRoomUnit(r.getPropertyId(), roomType, r.getCheckIn(), r.getCheckOut(), r.getId()));
+        }
 
         r.setStatus(ReservationStatus.CONFIRMED);
         r.setUserEmail(requireUserEmail(userEmail));
@@ -180,12 +191,16 @@ public class ReservationService {
     private ReservationDto finalizePaidReservation(String userId, String userEmail, CartItem ci, BigDecimal[] amounts, String paymentId) {
         reservationRepository.findByUserIdAndStatus(userId, ReservationStatus.PENDING_PAYMENT)
             .forEach(reservationRepository::delete);
+        String roomType = roomAvailabilityService.normalizeRoomType(ci.getRoomType());
+        String roomUnitId = reserveRoomUnit(ci.getPropertyId(), roomType, ci.getCheckIn(), ci.getCheckOut(), null);
 
         Reservation r = Reservation.builder()
             .userId(userId)
             .userEmail(userEmail)
             .propertyId(ci.getPropertyId())
             .propertyName(ci.getPropertyName())
+            .roomType(roomType)
+            .roomUnitId(roomUnitId)
             .city(ci.getCity())
             .imageUrl(ci.getImageUrl())
             .checkIn(ci.getCheckIn())
@@ -275,7 +290,7 @@ public class ReservationService {
     }
 
     public boolean isAvailable(String propertyId, LocalDate checkIn, LocalDate checkOut) {
-        return reservationRepository.countConflicting(propertyId, checkIn, checkOut) == 0;
+        return roomAvailabilityService.isRoomTypeAvailable(propertyId, "STANDARD", checkIn, checkOut);
     }
 
     public List<String> findOccupiedPropertyIds(LocalDate checkIn, LocalDate checkOut) {
@@ -301,13 +316,13 @@ public class ReservationService {
         if (nights <= 0) {
             throw new RuntimeException("La fecha de salida debe ser posterior al check-in");
         }
-        long conflicts = reservationRepository.countConflictingExcluding(reservationId, r.getPropertyId(), in, out);
-        if (conflicts > 0) {
-            throw new RuntimeException("Las fechas seleccionadas no están disponibles para esta propiedad.");
-        }
+        String roomType = roomAvailabilityService.normalizeRoomType(r.getRoomType());
+        String roomUnitId = reserveRoomUnit(r.getPropertyId(), roomType, in, out, reservationId);
         BigDecimal[] amounts = computeAmounts(r.getPricePerNight(), (int) nights);
         r.setCheckIn(in);
         r.setCheckOut(out);
+        r.setRoomType(roomType);
+        r.setRoomUnitId(roomUnitId);
         r.setNights((int) nights);
         if (req.getGuests() != null) {
             r.setGuests(req.getGuests());
@@ -318,11 +333,12 @@ public class ReservationService {
         return toDto(reservationRepository.save(r));
     }
 
-    private void assertAvailable(String propertyId, LocalDate checkIn, LocalDate checkOut) {
-        long c = reservationRepository.countConflicting(propertyId, checkIn, checkOut);
-        if (c > 0) {
-            throw new RuntimeException("Las fechas seleccionadas no están disponibles para esta propiedad.");
+    private String reserveRoomUnit(String propertyId, String roomType, LocalDate checkIn, LocalDate checkOut, Long excludingReservationId) {
+        String roomUnitId = roomAvailabilityService.allocateAvailableRoomUnitId(propertyId, roomType, checkIn, checkOut, excludingReservationId);
+        if (roomUnitId == null || roomUnitId.isBlank()) {
+            throw new RuntimeException("Las fechas seleccionadas no están disponibles para el tipo de habitación solicitado.");
         }
+        return roomUnitId;
     }
 
     private static BigDecimal[] computeAmounts(BigDecimal pricePerNight, int nights) {
@@ -414,6 +430,7 @@ public class ReservationService {
             throw new RuntimeException("No se puede cancelar: la estadía ya comenzó o comienza hoy");
         }
         r.setStatus(ReservationStatus.CANCELLED);
+        r.setRoomUnitId(null);
         return toDto(reservationRepository.save(r));
     }
 
@@ -425,6 +442,8 @@ public class ReservationService {
             .userEmail(o.getUserEmail())
             .propertyId(o.getPropertyId())
             .propertyName(o.getPropertyName())
+            .roomType(o.getRoomType())
+            .roomUnitId(o.getRoomUnitId())
             .city(o.getCity())
             .country(o.getCountry())
             .imageUrl(o.getImageUrl())
