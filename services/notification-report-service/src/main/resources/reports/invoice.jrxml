@@ -5,6 +5,17 @@
               name="invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20"
               uuid="b2c3d4e5-0001-4000-8000-000000000001">
     <property name="com.jaspersoft.studio.unit." value="pixel"/>
+
+    <style name="Base" fontName="Helvetica" fontSize="10" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+    <style name="Muted" style="Base" forecolor="#5B6776"/>
+    <style name="Title" style="Base" fontSize="18" isBold="true" forecolor="#0F172A"/>
+    <style name="H2" style="Base" fontSize="12" isBold="true" forecolor="#0F172A"/>
+    <style name="Label" style="Base" fontSize="9" isBold="true" forecolor="#475569"/>
+    <style name="Value" style="Base" fontSize="10" forecolor="#0F172A"/>
+    <style name="TableHeader" style="Base" fontSize="9" isBold="true" forecolor="#0F172A" backcolor="#F1F5F9" mode="Opaque"/>
+    <style name="TableCell" style="Base" fontSize="10" forecolor="#0F172A"/>
+    <style name="TotalValue" style="Base" fontSize="12" isBold="true" forecolor="#0F766E"/>
+
     <parameter name="ORDER_NUMBER" class="java.lang.String"/>
     <parameter name="CUSTOMER_EMAIL" class="java.lang.String"/>
     <parameter name="ORDER_DATE" class="java.lang.String"/>
@@ -21,124 +32,187 @@
     <field name="unitPrice" class="java.lang.String"/>
     <field name="lineTotal" class="java.lang.String"/>
     <title>
-        <band height="132">
+        <band height="170">
+            <rectangle>
+                <reportElement x="0" y="0" width="555" height="54" uuid="b2c3d4e5-0001-4000-8000-0000000011a0"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+
             <staticText>
-                <reportElement x="0" y="8" width="555" height="24" uuid="b2c3d4e5-0001-4000-8000-0000000000a1"/>
-                <textElement textAlignment="Center">
-                    <font size="16" isBold="true"/>
+                <reportElement x="0" y="14" width="555" height="26" uuid="b2c3d4e5-0001-4000-8000-0000000011a1"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font size="18" isBold="true"/>
                 </textElement>
-                <text><![CDATA[Luma — Factura de reserva]]></text>
+                <text><![CDATA[Luma]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="40" width="555" height="14" uuid="b2c3d4e5-0001-4000-8000-0000000011a2"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font size="10"/>
+                </textElement>
+                <text><![CDATA[Factura de reserva]]></text>
+            </staticText>
+
+            <line>
+                <reportElement x="0" y="64" width="555" height="1" uuid="b2c3d4e5-0001-4000-8000-0000000011a3"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#E2E8F0"/>
+                </graphicElement>
+            </line>
+
+            <staticText>
+                <reportElement style="Label" x="0" y="78" width="275" height="12" uuid="b2c3d4e5-0001-4000-8000-0000000011a4"/>
+                <text><![CDATA[Factura]]></text>
             </staticText>
             <textField>
-                <reportElement x="0" y="36" width="280" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a2"/>
-                <textElement/>
-                <textFieldExpression><![CDATA["Factura #: " + $P{ORDER_NUMBER}]]></textFieldExpression>
+                <reportElement style="Value" x="0" y="92" width="275" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000011a5"/>
+                <textFieldExpression><![CDATA["#" + $P{ORDER_NUMBER}]]></textFieldExpression>
             </textField>
-            <textField>
-                <reportElement x="280" y="36" width="275" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a3"/>
+
+            <staticText>
+                <reportElement style="Label" x="280" y="78" width="275" height="12" uuid="b2c3d4e5-0001-4000-8000-0000000011a6"/>
                 <textElement textAlignment="Right"/>
-                <textFieldExpression><![CDATA["Fecha: " + $P{ORDER_DATE}]]></textFieldExpression>
-            </textField>
+                <text><![CDATA[Fecha]]></text>
+            </staticText>
             <textField>
-                <reportElement x="0" y="54" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a4"/>
-                <textElement/>
-                <textFieldExpression><![CDATA["Cliente: " + $P{CUSTOMER_EMAIL}]]></textFieldExpression>
+                <reportElement style="Value" x="280" y="92" width="275" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000011a7"/>
+                <textElement textAlignment="Right"/>
+                <textFieldExpression><![CDATA[$P{ORDER_DATE}]]></textFieldExpression>
             </textField>
+
+            <staticText>
+                <reportElement style="Label" x="0" y="114" width="555" height="12" uuid="b2c3d4e5-0001-4000-8000-0000000011a8"/>
+                <text><![CDATA[Cliente]]></text>
+            </staticText>
             <textField>
-                <reportElement x="0" y="72" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a5"/>
-                <textElement/>
-                <textFieldExpression><![CDATA["Propiedad: " + $P{PROPERTY_NAME}]]></textFieldExpression>
+                <reportElement style="Value" x="0" y="128" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000011a9"/>
+                <textFieldExpression><![CDATA[$P{CUSTOMER_EMAIL}]]></textFieldExpression>
             </textField>
+
+            <staticText>
+                <reportElement style="Label" x="0" y="148" width="365" height="12" uuid="b2c3d4e5-0001-4000-8000-0000000011aa"/>
+                <text><![CDATA[Estadía]]></text>
+            </staticText>
             <textField>
-                <reportElement x="0" y="90" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a6"/>
-                <textElement/>
-                <textFieldExpression><![CDATA["Ciudad: " + $P{CITY}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="0" y="108" width="270" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a7"/>
-                <textElement/>
-                <textFieldExpression><![CDATA["Entrada: " + $P{CHECK_IN}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="285" y="108" width="270" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000a8"/>
-                <textElement/>
-                <textFieldExpression><![CDATA["Salida: " + $P{CHECK_OUT}]]></textFieldExpression>
+                <reportElement style="Value" x="0" y="162" width="365" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000011ab"/>
+                <textFieldExpression><![CDATA[$P{PROPERTY_NAME} + " · " + $P{CITY} + "  —  " + $P{CHECK_IN} + " → " + $P{CHECK_OUT}]]></textFieldExpression>
             </textField>
         </band>
     </title>
     <columnHeader>
-        <band height="22">
+        <band height="28">
+            <rectangle>
+                <reportElement x="0" y="2" width="555" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000012b0"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
             <staticText>
-                <reportElement x="0" y="2" width="280" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000b1"/>
-                <box><pen lineWidth="0.5f"/></box>
-                <textElement><font isBold="true"/></textElement>
+                <reportElement style="TableHeader" x="0" y="2" width="305" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000b1"/>
+                <box leftPadding="8" rightPadding="6" topPadding="4" bottomPadding="4">
+                    <pen lineWidth="0.0"/>
+                </box>
+                <textElement verticalAlignment="Middle"/>
                 <text><![CDATA[Concepto]]></text>
             </staticText>
             <staticText>
-                <reportElement x="280" y="2" width="50" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000b2"/>
-                <box><pen lineWidth="0.5f"/></box>
-                <textElement textAlignment="Center"><font isBold="true"/></textElement>
+                <reportElement style="TableHeader" x="305" y="2" width="55" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000b2"/>
+                <box topPadding="4" bottomPadding="4"><pen lineWidth="0.0"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
                 <text><![CDATA[Noches]]></text>
             </staticText>
             <staticText>
-                <reportElement x="330" y="2" width="100" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000b3"/>
-                <box><pen lineWidth="0.5f"/></box>
-                <textElement textAlignment="Right"><font isBold="true"/></textElement>
-                <text><![CDATA[Price]]></text>
+                <reportElement style="TableHeader" x="360" y="2" width="85" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000b3"/>
+                <box rightPadding="8" topPadding="4" bottomPadding="4"><pen lineWidth="0.0"/></box>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <text><![CDATA[Precio/noche]]></text>
             </staticText>
             <staticText>
-                <reportElement x="430" y="2" width="125" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000b4"/>
-                <box><pen lineWidth="0.5f"/></box>
-                <textElement textAlignment="Right"><font isBold="true"/></textElement>
-                <text><![CDATA[Line total]]></text>
+                <reportElement style="TableHeader" x="445" y="2" width="110" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000b4"/>
+                <box rightPadding="8" topPadding="4" bottomPadding="4"><pen lineWidth="0.0"/></box>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <text><![CDATA[Total]]></text>
             </staticText>
         </band>
     </columnHeader>
     <detail>
-        <band height="20">
+        <band height="26">
             <textField isStretchWithOverflow="true">
-                <reportElement x="0" y="0" width="280" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000c1"/>
-                <box leftPadding="2"><pen lineWidth="0.25f"/></box>
+                <reportElement style="TableCell" x="0" y="2" width="305" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000c1"/>
+                <box leftPadding="8" rightPadding="6" topPadding="4" bottomPadding="4">
+                    <pen lineWidth="0.0"/>
+                </box>
                 <textFieldExpression><![CDATA[$F{bookTitle}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="280" y="0" width="50" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000c2"/>
-                <box><pen lineWidth="0.25f"/></box>
-                <textElement textAlignment="Center"/>
+                <reportElement style="TableCell" x="305" y="2" width="55" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000c2"/>
+                <box topPadding="4" bottomPadding="4"><pen lineWidth="0.0"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
                 <textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="330" y="0" width="100" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000c3"/>
-                <box><pen lineWidth="0.25f"/></box>
-                <textElement textAlignment="Right"/>
+                <reportElement style="TableCell" x="360" y="2" width="85" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000c3"/>
+                <box rightPadding="8" topPadding="4" bottomPadding="4"><pen lineWidth="0.0"/></box>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
                 <textFieldExpression><![CDATA[$F{unitPrice}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="430" y="0" width="125" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000c4"/>
-                <box><pen lineWidth="0.25f"/></box>
-                <textElement textAlignment="Right"/>
+                <reportElement style="TableCell" x="445" y="2" width="110" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000c4"/>
+                <box rightPadding="8" topPadding="4" bottomPadding="4"><pen lineWidth="0.0"/></box>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
                 <textFieldExpression><![CDATA[$F{lineTotal}]]></textFieldExpression>
             </textField>
+            <line>
+                <reportElement x="0" y="25" width="555" height="1" uuid="b2c3d4e5-0001-4000-8000-0000000012c9"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#E2E8F0"/>
+                </graphicElement>
+            </line>
         </band>
     </detail>
     <summary>
-        <band height="70">
+        <band height="120">
+            <rectangle>
+                <reportElement x="0" y="12" width="555" height="96" uuid="b2c3d4e5-0001-4000-8000-0000000013d0"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+
+            <staticText>
+                <reportElement style="H2" x="0" y="18" width="240" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000013d1"/>
+                <text><![CDATA[Resumen]]></text>
+            </staticText>
+
+            <staticText>
+                <reportElement style="Muted" x="0" y="38" width="260" height="14" uuid="b2c3d4e5-0001-4000-8000-0000000013d2"/>
+                <text><![CDATA[Gracias por reservar con Luma.]]></text>
+            </staticText>
+
             <textField>
-                <reportElement x="330" y="10" width="225" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000d1"/>
+                <reportElement style="Muted" x="330" y="34" width="225" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000d1"/>
                 <textElement textAlignment="Right"/>
-                <textFieldExpression><![CDATA["Subtotal: " + $P{SUBTOTAL}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Subtotal  " + $P{SUBTOTAL}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="330" y="28" width="225" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000d2"/>
+                <reportElement style="Muted" x="330" y="52" width="225" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000d2"/>
                 <textElement textAlignment="Right"/>
-                <textFieldExpression><![CDATA["Tax (10%): " + $P{TAX}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Impuesto (10%)  " + $P{TAX}]]></textFieldExpression>
             </textField>
+
+            <line>
+                <reportElement x="330" y="72" width="225" height="1" uuid="b2c3d4e5-0001-4000-8000-0000000013d3"/>
+                <graphicElement>
+                    <pen lineWidth="0.75" lineColor="#CBD5E1"/>
+                </graphicElement>
+            </line>
+
             <textField>
-                <reportElement x="330" y="48" width="225" height="18" uuid="b2c3d4e5-0001-4000-8000-0000000000d3"/>
-                <textElement textAlignment="Right">
-                    <font size="12" isBold="true"/>
-                </textElement>
-                <textFieldExpression><![CDATA["TOTAL: " + $P{TOTAL}]]></textFieldExpression>
+                <reportElement style="TotalValue" x="330" y="82" width="225" height="20" uuid="b2c3d4e5-0001-4000-8000-0000000000d3"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA["TOTAL  " + $P{TOTAL}]]></textFieldExpression>
             </textField>
         </band>
     </summary>
