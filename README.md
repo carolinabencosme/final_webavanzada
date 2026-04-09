@@ -2,7 +2,7 @@
 
 Proyecto de arquitectura de microservicios para **búsqueda de propiedades, reservas y reseñas de hospedaje**.
 
-> Este repositorio **no** implementa venta de libros. El dominio principal es alojamiento temporal (propiedades, estadías, pagos y notificaciones).
+I> Este repositorio **no** implementa venta de libros. El dominio principal es alojamiento temporal (propiedades, estadías, pagos y notificaciones)
 
 ## Arquitectura
 
