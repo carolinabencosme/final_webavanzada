@@ -16,6 +16,7 @@ public class CartItemDto {
     private Long id;
     private String propertyId;
     private String propertyName;
+    private String roomType;
     private String city;
     private String imageUrl;
     private LocalDate checkIn;

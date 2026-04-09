@@ -36,6 +36,21 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Optional<Reservation> findByIdAndUserId(Long id, String userId);
 
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.roomUnitId = :roomUnitId AND r.status IN ('PENDING_PAYMENT','CONFIRMED','COMPLETED') AND r.checkIn < :checkOut AND r.checkOut > :checkIn")
+    long countConflictingByRoomUnitId(
+        @Param("roomUnitId") String roomUnitId,
+        @Param("checkIn") java.time.LocalDate checkIn,
+        @Param("checkOut") java.time.LocalDate checkOut
+    );
+
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.id <> :excludeId AND r.roomUnitId = :roomUnitId AND r.status IN ('PENDING_PAYMENT','CONFIRMED','COMPLETED') AND r.checkIn < :checkOut AND r.checkOut > :checkIn")
+    long countConflictingByRoomUnitIdExcluding(
+        @Param("excludeId") Long excludeId,
+        @Param("roomUnitId") String roomUnitId,
+        @Param("checkIn") java.time.LocalDate checkIn,
+        @Param("checkOut") java.time.LocalDate checkOut
+    );
+
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.propertyId = :propertyId AND r.status IN ('PENDING_PAYMENT','CONFIRMED','COMPLETED') AND r.checkIn < :checkOut AND r.checkOut > :checkIn")
     long countConflicting(
         @Param("propertyId") String propertyId,
