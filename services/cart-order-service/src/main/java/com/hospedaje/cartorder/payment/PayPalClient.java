@@ -131,10 +131,23 @@ public class PayPalClient {
             }
             return paypalOrderId;
         } catch (HttpStatusCodeException ex) {
+            String upstreamBody = ex.getResponseBodyAsString();
+            if (ex.getStatusCode().value() == 422 && isOrderNotApproved(upstreamBody)) {
+                throw new PayPalApiException(
+                    "PAYPAL_ORDER_NOT_APPROVED",
+                    "La orden de PayPal aún no está aprobada. Vuelve al checkout de PayPal y apruébala antes de confirmar.",
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                    snippet(upstreamBody)
+                );
+            }
             throw buildPayPalError("PAYPAL_CAPTURE_FAILED", "No se pudo confirmar el pago con PayPal.", ex);
         } catch (RestClientException ex) {
             throw new PayPalApiException("PAYPAL_CAPTURE_FAILED", "No se pudo confirmar el pago con PayPal.", null, snippet(ex.getMessage()));
         }
+    }
+
+    private boolean isOrderNotApproved(String upstreamBody) {
+        return upstreamBody != null && upstreamBody.contains("ORDER_NOT_APPROVED");
     }
 
     private PayPalApiException buildPayPalError(String code, String message, HttpStatusCodeException ex) {

@@ -7,7 +7,8 @@ import com.hospedaje.cartorder.entity.Reservation;
 import com.hospedaje.cartorder.entity.ReservationStatus;
 import com.hospedaje.cartorder.event.OrderCompletedEvent;
 import com.hospedaje.cartorder.exception.PayPalApiException;
-import com.hospedaje.cartorder.payment.PaymentProvider;
+import com.hospedaje.cartorder.payment.MockPaymentProvider;
+import com.hospedaje.cartorder.payment.PayPalPaymentProvider;
 import com.hospedaje.cartorder.repository.CartItemRepository;
 import com.hospedaje.cartorder.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +41,8 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final CartItemRepository cartItemRepository;
     private final RoomAvailabilityService roomAvailabilityService;
-    private final PaymentProvider paymentProvider;
+    private final MockPaymentProvider mockPaymentProvider;
+    private final Optional<PayPalPaymentProvider> payPalPaymentProvider;
     private final RabbitTemplate rabbitTemplate;
 
     @Transactional
@@ -99,8 +102,8 @@ public class ReservationService {
 
         BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), nights);
         String resolvedEmail = requireUserEmail(userEmail);
-        log.info("payment_provider_selected flow=checkout provider={}", paymentProvider.providerName());
-        String paymentId = paymentProvider.charge(resolvedEmail, amounts[2], req.getCardNumber(), req.getCardExpiry(), req.getCardCvc());
+        log.info("payment_provider_selected flow=checkout provider={}", mockPaymentProvider.providerName());
+        String paymentId = mockPaymentProvider.charge(resolvedEmail, amounts[2], req.getCardNumber(), req.getCardExpiry(), req.getCardCvc());
         return finalizePaidReservation(userId, resolvedEmail, ci, amounts, paymentId);
     }
 
@@ -119,9 +122,9 @@ public class ReservationService {
         int nights = resolveNights(ci);
 
         BigDecimal[] amounts = computeAmounts(ci.getPricePerNight(), nights);
-        log.info("payment_provider_selected flow=paypal_create provider={}", paymentProvider.providerName());
-        requirePayPalProvider("paypal_create");
-        Map<String, String> paypal = paymentProvider.createOrder(amounts[2], req.getReturnUrl(), req.getCancelUrl());
+        PayPalPaymentProvider payPalProvider = requirePayPalProvider("paypal_create");
+        log.info("payment_provider_selected flow=paypal_create provider={}", payPalProvider.providerName());
+        Map<String, String> paypal = payPalProvider.createOrder(amounts[2], req.getReturnUrl(), req.getCancelUrl());
         String paypalOrderId = paypal.get("paypalOrderId");
 
         Reservation r = Reservation.builder()
@@ -166,9 +169,9 @@ public class ReservationService {
             throw new RuntimeException("Selección vacía; no se puede completar el pago");
         }
 
-        log.info("payment_provider_selected flow=paypal_capture provider={}", paymentProvider.providerName());
-        requirePayPalProvider("paypal_capture");
-        String captureId = paymentProvider.captureOrder(req.getPaypalOrderId());
+        PayPalPaymentProvider payPalProvider = requirePayPalProvider("paypal_capture");
+        log.info("payment_provider_selected flow=paypal_capture provider={}", payPalProvider.providerName());
+        String captureId = payPalProvider.captureOrder(req.getPaypalOrderId());
         if (r.getRoomUnitId() == null || r.getRoomUnitId().isBlank()) {
             String roomType = roomAvailabilityService.normalizeRoomType(r.getRoomType());
             r.setRoomType(roomType);
@@ -269,17 +272,17 @@ public class ReservationService {
             .build();
     }
 
-    private void requirePayPalProvider(String flow) {
-        String activeProvider = paymentProvider.providerName();
-        if (!"paypal".equals(activeProvider)) {
-            log.warn("paypal_provider_mismatch flow={} provider={}", flow, activeProvider);
-            throw new PayPalApiException(
-                "PAYPAL_PROVIDER_MISMATCH",
-                "PayPal no está disponible porque el proveedor mock está activo.",
-                null,
-                null
-            );
+    private PayPalPaymentProvider requirePayPalProvider(String flow) {
+        if (payPalPaymentProvider.isPresent()) {
+            return payPalPaymentProvider.get();
         }
+        log.warn("paypal_provider_mismatch flow={} provider={}", flow, mockPaymentProvider.providerName());
+        throw new PayPalApiException(
+            "PAYPAL_PROVIDER_MISMATCH",
+            "PayPal no está disponible porque el proveedor mock está activo.",
+            null,
+            null
+        );
     }
 
     private static String requireUserEmail(String userEmail) {
