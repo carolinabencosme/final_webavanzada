@@ -7,8 +7,10 @@ import com.hospedaje.cartorder.web.RequestIdentityResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -155,12 +157,21 @@ public class ReservationController {
     }
 
     @GetMapping("/admin/all")
-    public ResponseEntity<ApiResponse<List<ReservationDto>>> adminAll() {
+    public ResponseEntity<ApiResponse<List<ReservationDto>>> adminAll(HttpServletRequest request) {
+        enforceAdminAccess(request);
         return ResponseEntity.ok(ApiResponse.success("OK", reservationService.getAllReservations()));
     }
 
     @GetMapping("/admin/stats")
-    public ResponseEntity<ApiResponse<ReservationStatsDto>> adminStats() {
+    public ResponseEntity<ApiResponse<ReservationStatsDto>> adminStats(HttpServletRequest request) {
+        enforceAdminAccess(request);
         return ResponseEntity.ok(ApiResponse.success("OK", reservationService.getDashboardStats()));
+    }
+
+    private void enforceAdminAccess(HttpServletRequest request) {
+        String role = request.getHeader("X-User-Role");
+        if (role == null || !"ADMIN".equalsIgnoreCase(role.trim())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin role required");
+        }
     }
 }
