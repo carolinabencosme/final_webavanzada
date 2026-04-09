@@ -59,8 +59,8 @@ public class NotificationService {
             snapshot.getItems() == null ? 0 : snapshot.getItems().size(),
             snapshot.getTotal());
         return OrderCompletedEvent.builder()
-            .orderId(snapshot.getOrderId())
-            .orderNumber(snapshot.getOrderNumber())
+            .reservationId(snapshot.getOrderId())
+            .reservationNumber(snapshot.getOrderNumber())
             .userId(snapshot.getUserId())
             .userEmail(snapshot.getUserEmail())
             .total(snapshot.getTotal())
