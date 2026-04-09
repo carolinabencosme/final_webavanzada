@@ -8,6 +8,9 @@ x-java-tracing: &java-tracing
 x-config-client: &config-client
   CONFIG_SERVER_HOST: config-service
 
+x-internal-auth: &internal-auth
+  INTERNAL_AUTH_TOKEN: ${INTERNAL_AUTH_TOKEN:-hospedaje-internal-token}
+
 services:
 
   # ── Infrastructure ──────────────────────────────────────────────────────────
@@ -104,8 +107,6 @@ services:
       args:
         MODULE: discovery-service
     container_name: hospedaje-discovery
-    ports:
-      - "8761:8761"
     environment:
       <<: *java-tracing
     networks:
@@ -123,8 +124,6 @@ services:
       args:
         MODULE: config-service
     container_name: hospedaje-config
-    ports:
-      - "8888:8888"
     environment:
       <<: *java-tracing
       EUREKA_HOST: discovery-service
@@ -143,7 +142,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      <<: [*java-tracing, *config-client]
+      <<: [*java-tracing, *config-client, *internal-auth]
       EUREKA_HOST: discovery-service
       JWT_SECRET: bookstoreSecretKey2024bookstoreSecretKey2024XD
       REDIS_HOST: redis
@@ -171,10 +170,8 @@ services:
       args:
         MODULE: auth-service
     container_name: hospedaje-auth-1
-    ports:
-      - "8081:8081"
     environment:
-      <<: [*java-tracing, *config-client]
+      <<: [*java-tracing, *config-client, *internal-auth]
       SERVER_PORT: 8081
       DB_HOST: postgres
       DB_NAME: authdb
@@ -201,10 +198,8 @@ services:
       args:
         MODULE: auth-service
     container_name: hospedaje-auth-2
-    ports:
-      - "8181:8081"
     environment:
-      <<: [*java-tracing, *config-client]
+      <<: [*java-tracing, *config-client, *internal-auth]
       SERVER_PORT: 8081
       DB_HOST: postgres
       DB_NAME: authdb
@@ -232,8 +227,6 @@ services:
       args:
         MODULE: catalog-service
     container_name: hospedaje-catalog-1
-    ports:
-      - "8082:8082"
     environment:
       <<: [*java-tracing, *config-client]
       MONGO_HOST: mongodb
@@ -257,8 +250,6 @@ services:
       args:
         MODULE: catalog-service
     container_name: hospedaje-catalog-2
-    ports:
-      - "8182:8082"
     environment:
       <<: [*java-tracing, *config-client]
       MONGO_HOST: mongodb
@@ -283,10 +274,8 @@ services:
       args:
         MODULE: cart-order-service
     container_name: hospedaje-cart-1
-    ports:
-      - "8083:8083"
     environment:
-      <<: [*java-tracing, *config-client]
+      <<: [*java-tracing, *config-client, *internal-auth]
       DB_HOST: postgres
       DB_NAME: orderdb
       DB_USER: postgres
@@ -317,10 +306,8 @@ services:
       args:
         MODULE: cart-order-service
     container_name: hospedaje-cart-2
-    ports:
-      - "8183:8083"
     environment:
-      <<: [*java-tracing, *config-client]
+      <<: [*java-tracing, *config-client, *internal-auth]
       DB_HOST: postgres
       DB_NAME: orderdb
       DB_USER: postgres
@@ -352,8 +339,6 @@ services:
       args:
         MODULE: review-service
     container_name: hospedaje-review-1
-    ports:
-      - "8084:8084"
     environment:
       <<: [*java-tracing, *config-client]
       DB_HOST: postgres
@@ -377,8 +362,6 @@ services:
       args:
         MODULE: review-service
     container_name: hospedaje-review-2
-    ports:
-      - "8184:8084"
     environment:
       <<: [*java-tracing, *config-client]
       DB_HOST: postgres
@@ -403,8 +386,6 @@ services:
       args:
         MODULE: notification-report-service
     container_name: hospedaje-notification
-    ports:
-      - "8085:8085"
     environment:
       <<: [*java-tracing, *config-client]
       MONGO_HOST: mongodb
@@ -436,8 +417,6 @@ services:
       args:
         MODULE: notification-report-service
     container_name: hospedaje-notification-2
-    ports:
-      - "8185:8085"
     environment:
       <<: [*java-tracing, *config-client]
       MONGO_HOST: mongodb
