@@ -29,6 +29,7 @@ const mapPayPalError = (error: unknown, t: (key: string) => string): PayPalReada
     PAYPAL_PROVIDER_MISMATCH: { message: t('cart.paypalProviderMismatch') },
     PAYPAL_CREATE_ORDER_FAILED: { message: t('cart.paypalCreateOrderErr') },
     PAYPAL_CAPTURE_FAILED: { message: t('cart.paypalCaptureErrDetailed') },
+    PAYPAL_ORDER_NOT_APPROVED: { message: t('cart.paypalOrderNotApproved') },
   }
 
   const backendCode = getReservationApiErrorCode(error)
@@ -79,6 +80,7 @@ export default function CartPage() {
           PAYPAL_TOKEN_FAILED: t('cart.paypalTokenErr'),
           PAYPAL_CREATE_ORDER_FAILED: t('cart.paypalCreateOrderErr'),
           PAYPAL_CAPTURE_FAILED: t('cart.paypalCaptureErrDetailed'),
+          PAYPAL_ORDER_NOT_APPROVED: t('cart.paypalOrderNotApproved'),
         })
       ),
   })

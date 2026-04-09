@@ -19,6 +19,7 @@ const mapPayPalReturnError = (error: unknown, t: (key: string) => string): PayPa
     PAYPAL_PROVIDER_MISMATCH: { message: t('cart.paypalProviderMismatch') },
     PAYPAL_CREATE_ORDER_FAILED: { message: t('cart.paypalCreateOrderErr') },
     PAYPAL_CAPTURE_FAILED: { message: t('cart.paypalCaptureErrDetailed') },
+    PAYPAL_ORDER_NOT_APPROVED: { message: t('cart.paypalOrderNotApproved') },
   }
 
   if (backendCode && byCode[backendCode]) return byCode[backendCode]

@@ -120,6 +120,7 @@
     "paypalProviderMismatch": "El flujo esperaba PayPal.",
     "paypalCreateOrderErr": "Error al crear orden en PayPal.",
     "paypalCaptureErrDetailed": "Falló la captura tras aprobar.",
+    "paypalOrderNotApproved": "La orden de PayPal aún no fue aprobada. Apruébala en PayPal y vuelve a intentar.",
     "paypalCaptureErr": "No se confirmó el pago.",
     "paypalMissingToken": "Falta token en la URL de retorno.",
     "paypalProcessing": "Confirmando con PayPal…",
