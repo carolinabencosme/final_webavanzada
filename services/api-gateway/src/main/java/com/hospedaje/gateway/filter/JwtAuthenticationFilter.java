@@ -23,6 +23,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
+    @Value("${internal.auth.token}")
+    private String internalAuthToken;
+
     private static final List<String> PUBLIC_PATHS = List.of(
         "/auth/login", "/auth/register",
         "/properties"
@@ -60,7 +63,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             ServerWebExchange mutated = exchange.mutate()
                 .request(r -> r.header("X-User-Id", userId)
                     .header("X-User-Role", role != null ? role : "")
-                    .header("X-User-Email", email != null ? email : ""))
+                    .header("X-User-Email", email != null ? email : "")
+                    .header("X-Internal-Auth", internalAuthToken))
                 .build();
 
             return chain.filter(mutated);

@@ -25,6 +25,9 @@ spring:
 jwt:
   secret: ${JWT_SECRET:bookstoreSecretKey2024bookstoreSecretKey2024XD}
   expiration: 86400000
+internal:
+  auth:
+    token: ${INTERNAL_AUTH_TOKEN:hospedaje-internal-token}
 eureka:
   client:
     service-url:
