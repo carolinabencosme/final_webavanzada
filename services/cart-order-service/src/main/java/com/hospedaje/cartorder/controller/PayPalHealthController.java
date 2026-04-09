@@ -3,7 +3,8 @@ package com.hospedaje.cartorder.controller;
 import com.hospedaje.cartorder.config.PayPalProperties;
 import com.hospedaje.cartorder.exception.PayPalApiException;
 import com.hospedaje.cartorder.payment.PayPalClient;
-import com.hospedaje.cartorder.payment.PaymentProvider;
+import com.hospedaje.cartorder.payment.MockPaymentProvider;
+import com.hospedaje.cartorder.payment.PayPalPaymentProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/payments/paypal")
@@ -25,7 +27,8 @@ public class PayPalHealthController {
 
     private final PayPalProperties payPalProperties;
     private final PayPalClient payPalClient;
-    private final PaymentProvider paymentProvider;
+    private final MockPaymentProvider mockPaymentProvider;
+    private final Optional<PayPalPaymentProvider> payPalPaymentProvider;
     private final Environment environment;
 
     @GetMapping("/health")
@@ -78,7 +81,7 @@ public class PayPalHealthController {
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("enabled", payPalProperties.isEnabled());
-        response.put("provider", paymentProvider.providerName());
+        response.put("provider", payPalPaymentProvider.map(PayPalPaymentProvider::providerName).orElseGet(mockPaymentProvider::providerName));
         response.put("clientIdPresent", clientIdPresent);
         response.put("clientSecretPresent", clientSecretPresent);
         response.put("sdkConfigReady", sdkConfigReady);

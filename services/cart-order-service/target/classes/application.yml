@@ -38,6 +38,9 @@ paypal:
   client-id: ${PAYPAL_CLIENT_ID:}
   client-secret: ${PAYPAL_CLIENT_SECRET:}
   health-enabled: ${PAYPAL_HEALTH_ENABLED:false}
+internal:
+  auth:
+    token: ${INTERNAL_AUTH_TOKEN:hospedaje-internal-token}
 eureka:
   client:
     service-url:

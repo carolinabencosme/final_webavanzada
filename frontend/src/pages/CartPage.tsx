@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Trash2, ShoppingBag, Calendar } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -51,6 +51,7 @@ const mapPayPalError = (error: unknown, t: (key: string) => string): PayPalReada
 export default function CartPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
+  const navigate = useNavigate()
   const user = getUser()
   const { data, isLoading } = useQuery({ queryKey: ['cart'], queryFn: getCart })
   const [paypalErr, setPaypalErr] = useState<PayPalReadableError | null>(null)
@@ -61,18 +62,23 @@ export default function CartPage() {
   })
 
   const checkoutMut = useMutation({
-    mutationFn: () =>
-      checkout({
-        userEmail: user!.email,
+    mutationFn: () => {
+      if (!user?.email) {
+        throw new Error('missing_user')
+      }
+      return checkout({
+        userEmail: user.email,
         cardNumber: '4242424242424242',
         cardExpiry: '12/30',
         cardCvc: '123',
-      }),
+      })
+    },
     onSuccess: () => {
       toast.success(t('cart.orderOk'))
       qc.invalidateQueries({ queryKey: ['cart'] })
       qc.invalidateQueries({ queryKey: ['reservations'] })
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
+      navigate('/mis-reservas')
     },
     onError: (error) =>
       toast.error(
