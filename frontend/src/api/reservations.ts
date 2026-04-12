@@ -82,6 +82,9 @@ export const getReservationById = (id: string) => api.get(`/reservations/${id}`)
 
 export const cancelReservation = (id: number) => api.put(`/reservations/${id}/cancel`).then((r) => r.data.data)
 
+/** Solo permitido en backend cuando la fecha de salida ya pasó (check-out antes que hoy). */
+export const deleteEndedReservation = (id: number) => api.delete(`/reservations/${id}`).then((r) => r.data)
+
 export interface UpdateReservationBody {
   checkIn: string
   checkOut: string
@@ -116,7 +119,8 @@ export const downloadInvoiceWithRetry = async (
       return await downloadInvoice(orderId)
     } catch (error) {
       const status = (error as AxiosError)?.response?.status
-      const shouldRetry = (status === 404 || status === 503) && attempt < retries
+      const shouldRetry =
+        (status === 404 || status === 503 || (status === 500 && attempt < 2)) && attempt < retries
       if (!shouldRetry) throw error
       attempt += 1
       await sleep(delayMs)

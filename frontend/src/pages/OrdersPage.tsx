@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { MapPin, Package, Pencil } from 'lucide-react'
+import type { AxiosError } from 'axios'
+import { MapPin, Package, Pencil, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { getMyReservations, updateReservation } from '../api/reservations'
+import { deleteEndedReservation, getMyReservations, updateReservation } from '../api/reservations'
 
 export default function OrdersPage() {
   const { t } = useTranslation()
@@ -14,6 +15,29 @@ export default function OrdersPage() {
   const [formOut, setFormOut] = useState('')
   const [formGuests, setFormGuests] = useState(2)
   const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  const checkoutDatePassed = (checkOut?: string) => {
+    if (!checkOut) return false
+    const co = checkOut.slice(0, 10)
+    const today = new Date().toISOString().slice(0, 10)
+    return co < today
+  }
+
+  const removeFromHistory = async (id: number) => {
+    if (!window.confirm(t('orders.deleteConfirm'))) return
+    setDeletingId(id)
+    try {
+      await deleteEndedReservation(id)
+      await qc.invalidateQueries({ queryKey: ['reservations'] })
+      toast.success(t('orders.deleted'))
+    } catch (e) {
+      const ax = e as AxiosError<{ message?: string }>
+      toast.error(ax.response?.data?.message ?? t('orders.deleteErr'))
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   if (isLoading) {
     return <div className="max-w-4xl mx-auto px-4 py-20 text-ink-muted text-sm">{t('orders.loading')}</div>
@@ -101,16 +125,29 @@ export default function OrdersPage() {
                       {o.createdAt ? ` · ${new Date(o.createdAt).toLocaleString()}` : ''}
                     </p>
                     <p className="text-primary-700 font-semibold font-serif text-xl mt-2">${Number(o.total ?? 0).toFixed(2)}</p>
-                    {(o.status === 'PENDING_PAYMENT' || o.status === 'CONFIRMED') && (
-                      <button
-                        type="button"
-                        onClick={() => openEdit(o)}
-                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary-700 hover:text-primary-800"
-                      >
-                        <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
-                        {t('orders.edit')}
-                      </button>
-                    )}
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      {(o.status === 'PENDING_PAYMENT' || o.status === 'CONFIRMED') && (
+                        <button
+                          type="button"
+                          onClick={() => openEdit(o)}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary-700 hover:text-primary-800"
+                        >
+                          <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
+                          {t('orders.edit')}
+                        </button>
+                      )}
+                      {o.status !== 'PENDING_PAYMENT' && checkoutDatePassed(o.checkOut) && (
+                        <button
+                          type="button"
+                          disabled={deletingId === o.id}
+                          onClick={() => removeFromHistory(o.id)}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-ink-muted hover:text-red-700"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                          {deletingId === o.id ? '…' : t('orders.deleteFromHistory')}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </li>
               )

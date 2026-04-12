@@ -6,7 +6,7 @@
               uuid="b2c3d4e5-0001-4000-8000-000000000001">
     <property name="com.jaspersoft.studio.unit." value="pixel"/>
 
-    <style name="Base" fontName="Helvetica" fontSize="10" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+    <style name="Base" fontName="DejaVu Sans" fontSize="10" pdfFontName="DejaVuSans.ttf" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
     <style name="Muted" style="Base" forecolor="#5B6776"/>
     <style name="Title" style="Base" fontSize="18" isBold="true" forecolor="#0F172A"/>
     <style name="H2" style="Base" fontSize="12" isBold="true" forecolor="#0F172A"/>
@@ -41,17 +41,13 @@
             </rectangle>
 
             <staticText>
-                <reportElement x="0" y="14" width="555" height="26" uuid="b2c3d4e5-0001-4000-8000-0000000011a1"/>
-                <textElement textAlignment="Left" verticalAlignment="Middle">
-                    <font size="18" isBold="true"/>
-                </textElement>
+                <reportElement style="Title" x="0" y="14" width="555" height="26" uuid="b2c3d4e5-0001-4000-8000-0000000011a1"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
                 <text><![CDATA[Luma]]></text>
             </staticText>
             <staticText>
-                <reportElement x="0" y="40" width="555" height="14" uuid="b2c3d4e5-0001-4000-8000-0000000011a2"/>
-                <textElement textAlignment="Left" verticalAlignment="Middle">
-                    <font size="10"/>
-                </textElement>
+                <reportElement style="Base" x="0" y="40" width="555" height="14" uuid="b2c3d4e5-0001-4000-8000-0000000011a2"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
                 <text><![CDATA[Factura de reserva]]></text>
             </staticText>
 
@@ -68,7 +64,7 @@
             </staticText>
             <textField>
                 <reportElement style="Value" x="0" y="92" width="275" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000011a5"/>
-                <textFieldExpression><![CDATA["#" + $P{ORDER_NUMBER}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["#" + ($P{ORDER_NUMBER} == null ? "" : $P{ORDER_NUMBER})]]></textFieldExpression>
             </textField>
 
             <staticText>
@@ -79,7 +75,7 @@
             <textField>
                 <reportElement style="Value" x="280" y="92" width="275" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000011a7"/>
                 <textElement textAlignment="Right"/>
-                <textFieldExpression><![CDATA[$P{ORDER_DATE}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{ORDER_DATE} == null ? "" : $P{ORDER_DATE}]]></textFieldExpression>
             </textField>
 
             <staticText>
@@ -88,7 +84,7 @@
             </staticText>
             <textField>
                 <reportElement style="Value" x="0" y="128" width="555" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000011a9"/>
-                <textFieldExpression><![CDATA[$P{CUSTOMER_EMAIL}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{CUSTOMER_EMAIL} == null ? "" : $P{CUSTOMER_EMAIL}]]></textFieldExpression>
             </textField>
 
             <staticText>
@@ -97,7 +93,7 @@
             </staticText>
             <textField>
                 <reportElement style="Value" x="0" y="162" width="365" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000011ab"/>
-                <textFieldExpression><![CDATA[$P{PROPERTY_NAME} + " · " + $P{CITY} + "  —  " + $P{CHECK_IN} + " → " + $P{CHECK_OUT}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[($P{PROPERTY_NAME} == null ? "" : $P{PROPERTY_NAME}) + " · " + ($P{CITY} == null ? "" : $P{CITY}) + "  —  " + ($P{CHECK_IN} == null ? "" : $P{CHECK_IN}) + " → " + ($P{CHECK_OUT} == null ? "" : $P{CHECK_OUT})]]></textFieldExpression>
             </textField>
         </band>
     </title>
@@ -144,25 +140,25 @@
                 <box leftPadding="8" rightPadding="6" topPadding="4" bottomPadding="4">
                     <pen lineWidth="0.0"/>
                 </box>
-                <textFieldExpression><![CDATA[$F{bookTitle}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{bookTitle} == null ? "" : $F{bookTitle}]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement style="TableCell" x="305" y="2" width="55" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000c2"/>
                 <box topPadding="4" bottomPadding="4"><pen lineWidth="0.0"/></box>
                 <textElement textAlignment="Center" verticalAlignment="Middle"/>
-                <textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{quantity} == null ? java.lang.Integer.valueOf(0) : $F{quantity}]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement style="TableCell" x="360" y="2" width="85" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000c3"/>
                 <box rightPadding="8" topPadding="4" bottomPadding="4"><pen lineWidth="0.0"/></box>
                 <textElement textAlignment="Right" verticalAlignment="Middle"/>
-                <textFieldExpression><![CDATA[$F{unitPrice}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{unitPrice} == null ? "" : $F{unitPrice}]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement style="TableCell" x="445" y="2" width="110" height="22" uuid="b2c3d4e5-0001-4000-8000-0000000000c4"/>
                 <box rightPadding="8" topPadding="4" bottomPadding="4"><pen lineWidth="0.0"/></box>
                 <textElement textAlignment="Right" verticalAlignment="Middle"/>
-                <textFieldExpression><![CDATA[$F{lineTotal}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{lineTotal} == null ? "" : $F{lineTotal}]]></textFieldExpression>
             </textField>
             <line>
                 <reportElement x="0" y="25" width="555" height="1" uuid="b2c3d4e5-0001-4000-8000-0000000012c9"/>
@@ -194,12 +190,12 @@
             <textField>
                 <reportElement style="Muted" x="330" y="34" width="225" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000d1"/>
                 <textElement textAlignment="Right"/>
-                <textFieldExpression><![CDATA["Subtotal  " + $P{SUBTOTAL}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Subtotal  " + ($P{SUBTOTAL} == null ? "" : $P{SUBTOTAL})]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement style="Muted" x="330" y="52" width="225" height="16" uuid="b2c3d4e5-0001-4000-8000-0000000000d2"/>
                 <textElement textAlignment="Right"/>
-                <textFieldExpression><![CDATA["Impuesto (10%)  " + $P{TAX}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Impuesto (10%)  " + ($P{TAX} == null ? "" : $P{TAX})]]></textFieldExpression>
             </textField>
 
             <line>
@@ -212,7 +208,7 @@
             <textField>
                 <reportElement style="TotalValue" x="330" y="82" width="225" height="20" uuid="b2c3d4e5-0001-4000-8000-0000000000d3"/>
                 <textElement textAlignment="Right" verticalAlignment="Middle"/>
-                <textFieldExpression><![CDATA["TOTAL  " + $P{TOTAL}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["TOTAL  " + ($P{TOTAL} == null ? "" : $P{TOTAL})]]></textFieldExpression>
             </textField>
         </band>
     </summary>

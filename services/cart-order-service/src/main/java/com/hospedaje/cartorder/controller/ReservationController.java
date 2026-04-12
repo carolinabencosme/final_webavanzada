@@ -156,6 +156,13 @@ public class ReservationController {
             reservationService.cancelReservation(identityResolver.resolveUserId(request), reservationId)));
     }
 
+    @DeleteMapping("/{reservationId}")
+    public ResponseEntity<ApiResponse<Void>> deleteEnded(HttpServletRequest request,
+                                                         @PathVariable Long reservationId) {
+        reservationService.deleteEndedReservation(identityResolver.resolveUserId(request), reservationId);
+        return ResponseEntity.ok(ApiResponse.success("Reserva eliminada", null));
+    }
+
     @GetMapping("/admin/all")
     public ResponseEntity<ApiResponse<List<ReservationDto>>> adminAll(HttpServletRequest request) {
         enforceAdminAccess(request);

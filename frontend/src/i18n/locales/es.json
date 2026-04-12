@@ -142,7 +142,11 @@
     "save": "Guardar",
     "cancelEdit": "Cerrar",
     "updated": "Reserva actualizada",
-    "updateErr": "No se pudo actualizar"
+    "updateErr": "No se pudo actualizar",
+    "deleteFromHistory": "Eliminar del historial",
+    "deleteConfirm": "¿Eliminar esta reserva de tu historial? No se puede deshacer.",
+    "deleted": "Reserva eliminada",
+    "deleteErr": "No se pudo eliminar"
   },
   "profile": {
     "label": "Cuenta",

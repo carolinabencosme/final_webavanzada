@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,4 +31,11 @@ public class InvoiceSnapshot {
     private BigDecimal total;
     private LocalDateTime createdAt;
     private List<OrderCompletedEvent.OrderItemInfo> items;
+
+    /** Copied from the order event so invoices can be regenerated without relying only on line items. */
+    private String propertyName;
+    private String city;
+    private LocalDate checkIn;
+    private LocalDate checkOut;
+    private int nights;
 }

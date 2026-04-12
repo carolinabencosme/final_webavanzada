@@ -142,7 +142,11 @@
     "save": "Save",
     "cancelEdit": "Close",
     "updated": "Reservation updated",
-    "updateErr": "Could not update"
+    "updateErr": "Could not update",
+    "deleteFromHistory": "Remove from history",
+    "deleteConfirm": "Remove this reservation from your history? This cannot be undone.",
+    "deleted": "Reservation removed",
+    "deleteErr": "Could not remove"
   },
   "profile": {
     "label": "Account",

@@ -1,6 +1,7 @@
 package com.hospedaje.notification.event;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderCompletedEvent {
     @JsonAlias("orderId")
     private String reservationId;
@@ -37,6 +39,7 @@ public class OrderCompletedEvent {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class OrderItemInfo {
         @JsonAlias("bookId")
         private String propertyId;

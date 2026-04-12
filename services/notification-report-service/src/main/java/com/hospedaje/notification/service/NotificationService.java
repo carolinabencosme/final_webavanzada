@@ -66,6 +66,11 @@ public class NotificationService {
             .total(snapshot.getTotal())
             .createdAt(snapshot.getCreatedAt())
             .items(snapshot.getItems())
+            .propertyName(snapshot.getPropertyName())
+            .city(snapshot.getCity())
+            .checkIn(snapshot.getCheckIn())
+            .checkOut(snapshot.getCheckOut())
+            .nights(snapshot.getNights())
             .build();
     }
 
@@ -78,6 +83,11 @@ public class NotificationService {
             .total(event.getTotal())
             .createdAt(event.getCreatedAt())
             .items(event.getItems())
+            .propertyName(event.getPropertyName())
+            .city(event.getCity())
+            .checkIn(event.getCheckIn())
+            .checkOut(event.getCheckOut())
+            .nights(event.getNights())
             .build();
         invoiceSnapshotRepository.save(snapshot);
         log.info("invoice_snapshot_saved orderId={} orderNumber={} items={} total={}",

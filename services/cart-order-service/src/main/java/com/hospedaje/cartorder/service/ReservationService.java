@@ -437,6 +437,23 @@ public class ReservationService {
         return toDto(reservationRepository.save(r));
     }
 
+    /**
+     * Borrado del historial cuando la estadía ya terminó (fecha de salida estrictamente anterior a hoy).
+     */
+    @Transactional
+    public void deleteEndedReservation(String userId, Long reservationId) {
+        Reservation r = reservationRepository.findByIdAndUserId(reservationId, userId)
+            .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada"));
+        if (r.getStatus() == ReservationStatus.PENDING_PAYMENT) {
+            throw new IllegalArgumentException("No se puede eliminar una reserva pendiente de pago.");
+        }
+        LocalDate today = LocalDate.now();
+        if (!r.getCheckOut().isBefore(today)) {
+            throw new IllegalArgumentException("Solo puedes eliminar reservas cuya fecha de salida ya pasó.");
+        }
+        reservationRepository.delete(r);
+    }
+
     private ReservationDto toDto(Reservation o) {
         return ReservationDto.builder()
             .id(o.getId())
