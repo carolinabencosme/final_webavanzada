@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class CartItemPostgresIntegrationTest {
 
+    @SuppressWarnings("resource") // closed by Testcontainers / JUnit extension
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
         .withDatabaseName("orderdb_test")

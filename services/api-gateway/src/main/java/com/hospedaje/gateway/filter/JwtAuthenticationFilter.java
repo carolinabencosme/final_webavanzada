@@ -26,9 +26,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Value("${internal.auth.token}")
     private String internalAuthToken;
 
-    private static final List<String> PUBLIC_PATHS = List.of(
-        "/auth/login", "/auth/register",
-        "/properties"
+    /** Path substrings that skip JWT (see {@link #isPublicPath(String, String)}). */
+    private static final List<String> PUBLIC_AUTH_PATH_PREFIXES = List.of(
+        "/auth/login", "/auth/register"
     );
 
     @Override
@@ -77,7 +77,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private boolean isPublicPath(String path, String method) {
         // Strip the leading /api prefix since routes have StripPrefix=1
         // But filter runs before routing, so check original path
-        if (path.contains("/auth/login") || path.contains("/auth/register")) return true;
+        if (PUBLIC_AUTH_PATH_PREFIXES.stream().anyMatch(path::contains)) return true;
         if ("GET".equals(method) && path.contains("/properties")) return true;
         if ("GET".equals(method) && path.contains("/reviews/property/")) return true;
         if ("GET".equals(method) && path.contains("/reservations/availability")) return true;

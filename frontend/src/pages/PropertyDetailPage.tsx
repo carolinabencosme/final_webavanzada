@@ -8,7 +8,7 @@ import { addToCart } from '../api/cart'
 import { createReview, getPropertyReviews } from '../api/reviews'
 import { getUser } from '../store/authStore'
 import { pickStayPlaceholder } from '../lib/placeholderImages'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 function addDays(d: Date, n: number) {
   const x = new Date(d)
@@ -18,6 +18,11 @@ function addDays(d: Date, n: number) {
 
 function fmt(d: Date) {
   return d.toISOString().slice(0, 10)
+}
+
+function apiErrorMessage(err: unknown): string | undefined {
+  const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+  return typeof msg === 'string' && msg.trim() ? msg.trim() : undefined
 }
 
 export default function PropertyDetailPage() {
@@ -38,6 +43,16 @@ export default function PropertyDetailPage() {
     enabled: !!id,
   })
 
+  const maxGuestCap = useMemo(() => {
+    const m = (property as { maxGuests?: number } | undefined)?.maxGuests
+    return typeof m === 'number' && m > 0 ? m : 20
+  }, [property])
+
+  useEffect(() => {
+    if (!property) return
+    setGuests((g) => Math.min(Math.max(1, g), maxGuestCap))
+  }, [property, maxGuestCap])
+
   const { data: reviews } = useQuery({
     queryKey: ['reviews', id],
     queryFn: () => getPropertyReviews(id!),
@@ -54,8 +69,8 @@ export default function PropertyDetailPage() {
       await addToCart(id, checkIn, checkOut, guests)
       qc.invalidateQueries({ queryKey: ['cart'] })
       toast.success(t('propertyDetail.toastOk'))
-    } catch {
-      toast.error(t('propertyDetail.toastErr'))
+    } catch (err) {
+      toast.error(apiErrorMessage(err) ?? t('propertyDetail.toastErr'))
     }
   }
 
@@ -169,10 +184,14 @@ export default function PropertyDetailPage() {
                 <input
                   type="number"
                   min={1}
-                  max={p.maxGuests ?? 20}
+                  max={maxGuestCap}
                   className="input"
                   value={guests}
-                  onChange={(e) => setGuests(Number(e.target.value))}
+                  onChange={(e) => {
+                    const raw = Number(e.target.value)
+                    const n = Number.isFinite(raw) ? raw : 1
+                    setGuests(Math.min(Math.max(1, n), maxGuestCap))
+                  }}
                 />
               </label>
             </div>

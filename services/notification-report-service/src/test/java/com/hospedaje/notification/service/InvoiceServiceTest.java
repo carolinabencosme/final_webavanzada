@@ -15,8 +15,8 @@ class InvoiceServiceTest {
     void generatesPdfWhenItemsListIsEmptyUsingFallbackLine() {
         InvoiceService svc = new InvoiceService();
         OrderCompletedEvent event = OrderCompletedEvent.builder()
-            .orderId("99")
-            .orderNumber("RES-99")
+            .reservationId("99")
+            .reservationNumber("RES-99")
             .userEmail("guest@test.com")
             .total(new BigDecimal("373.93"))
             .nights(5)
